@@ -15,7 +15,7 @@ All decisions made by the project team should be documented and tracked. This is
 
 ## Decision Drivers
 
-* @gc-victor
+* [@gc-victor](https://github.com/gc-victor)
 
 ## Considered Options
 
