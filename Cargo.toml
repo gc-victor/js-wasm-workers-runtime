@@ -1,6 +1,8 @@
 [package]
-name = "quickjs-wasm-runtime"
+name = "js-wasm-workers-runtime"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+anyhow = "1.0"
+quickjs-wasm-rs = { version = "0.1.3", features = ["json"] }

@@ -2,4 +2,7 @@
 **/*.rs.bk
 !*.wasm
 /wasi-sdk
+/node_modules/
+/dist/
+/examples/**/target/ 
 .vscode

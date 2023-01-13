@@ -1,0 +1,8 @@
+{
+	"dependencies": {
+		"abortcontroller-polyfill": "1.7.5",
+		"esbuild": "0.16.16",
+		"rome": "11.0.0",
+		"web-streams-polyfill": "3.2.1"
+	}
+}
