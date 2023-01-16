@@ -18,3 +18,7 @@ path = "runtime/src/main.rs"
 [[example]]
 name = "logger"
 path = "logger/src/main.rs"
+
+[[example]]
+name = "promise"
+path = "promise/src/main.rs"

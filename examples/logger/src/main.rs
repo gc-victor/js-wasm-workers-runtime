@@ -14,7 +14,6 @@ fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
     let handler = handler.trim()
         .replace("export const handleRequest = ", "handleRequest = ")
-        .replace("export function handleRequest", "function handleRequest")
         .replace("export async function handleRequest", "async function handleRequest");
     let mut contents = String::new();
 
@@ -30,6 +29,7 @@ fn main() -> Result<()> {
     let wasi = WasiCtxBuilder::new()
         .stdin(Box::new(stdin))
         .stdout(Box::new(stdout))
+        .arg(&r#"{"arg": 1}"#.to_string())?
         .build();
     let mut store = Store::new(&engine, wasi);
             

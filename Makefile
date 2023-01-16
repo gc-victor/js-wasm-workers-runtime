@@ -1,3 +1,5 @@
+ARGUMENTS = $(filter-out $@,$(MAKECMDGOALS))
+
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
 WASI_SDK ?= ${ROOT_DIR}/wasi-sdk
 WASI_VERSION ?= 17
@@ -23,11 +25,8 @@ release: esbuild
 	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo build --target wasm32-wasi --release
 
-example_logger:
-	cargo run --example logger --manifest-path examples/Cargo.toml
-
-example_runtime:
-	cargo run --example runtime --manifest-path examples/Cargo.toml
+example:
+	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml
 
 install_wasi_sdk:
 	@echo "Installing WASI SDK..."
@@ -38,3 +37,7 @@ install_wasi_sdk:
 	tar xvf wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz && \
 	mv wasi-sdk-${WASI_VERSION_FULL} wasi-sdk && \
 	rm wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz \
+
+# catch anything and do nothing
+%:
+	@:
