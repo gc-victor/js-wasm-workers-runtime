@@ -20,5 +20,9 @@ name = "logger"
 path = "logger/src/main.rs"
 
 [[example]]
-name = "promise"
-path = "promise/src/main.rs"
+name = "request-json"
+path = "request-json/src/main.rs"
+
+[[example]]
+name = "request-text"
+path = "request-text/src/main.rs"

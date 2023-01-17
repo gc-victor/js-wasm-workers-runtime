@@ -1,13 +1,15 @@
-use anyhow::{anyhow, Result};
-use once_cell::sync::{Lazy, OnceCell};
-use quickjs_wasm_rs::{json, Context, Exception, Value};
-use send_wrapper::SendWrapper;
 use std::{
     env,
     io::{stderr, stdin, stdout, Read, Write},
     ops::Deref,
+    str,
     sync::Mutex,
 };
+
+use anyhow::{anyhow, Result};
+use once_cell::sync::{Lazy, OnceCell};
+use quickjs_wasm_rs::{json, Context, Exception, Value};
+use send_wrapper::SendWrapper;
 
 mod globals;
 
@@ -20,6 +22,8 @@ static POLYFILL: &str = include_str!("../dist/web-platform-apis.js");
 static ON_RESOLVE: OnceCell<SendWrapper<Value>> = OnceCell::new();
 static ON_REJECT: OnceCell<SendWrapper<Value>> = OnceCell::new();
 static RESPONSE: Lazy<Mutex<Option<Result<SendWrapper<Value>>>>> = Lazy::new(|| Mutex::new(None));
+
+// type Request = http::Request<Option<bytes::Bytes>>;
 
 fn main() -> Result<()> {
     let context = Context::default();
@@ -58,11 +62,8 @@ fn main() -> Result<()> {
 
     // TODO: set env as globals
 
-    // TODO: set request as input value
-    let input_bytes = args[0].as_bytes();
-    let request = json::transcode_input(&context, &input_bytes)?;
     // @see: https://github.com/fermyon/spin-js-sdk/blob/569b76d32c06d44d9b6c928e526c82594782c4cb/crates/spin-js-engine/src/lib.rs#L552
-    let output = handler.call(&global, &[request])?;
+    let output = handler.call(&global, &[request::set_request(args, &context)?])?;
     let then = output.get_property("then")?;
     let response: Vec<u8>;
 

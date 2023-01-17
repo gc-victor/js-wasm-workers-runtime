@@ -20,8 +20,8 @@ class Request {
 
         options = options || {};
 
-        let body = options.body;
-
+        this._bodyInit = options.body;
+        this.body = options.body;
         this.cache = options?.cache || "default";
         this.destination = "worker";
         this.integrity = options?.integrity || "";
@@ -48,9 +48,9 @@ class Request {
             this.mode = input.mode;
             this.signal = input.signal;
 
-            if (!body && input._bodyInit != null) {
-                body = input._bodyInit;
-                input.bodyUsed = true;
+            if (!this.body && input._bodyInit != null) {
+                this.body = input._bodyInit;
+                this.bodyUsed = true;
             }
         } else {
             this.url = String(input);
@@ -128,10 +128,8 @@ class Request {
 
 globalThis.Request = Request;
 
-// HTTP methods whose capitalization should be normalized
-var methods = ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"];
-
 function normalizeMethod(method) {
+    var methods = ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"];
     var upcased = method.toUpperCase();
 
     return methods.indexOf(upcased) > -1 ? upcased : method;

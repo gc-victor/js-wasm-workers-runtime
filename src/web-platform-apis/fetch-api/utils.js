@@ -79,36 +79,39 @@ export const parseMultipart = (headers, body) => {
     }
 };
 
-export async function arrayBuffer(self) {
+export function arrayBuffer(self) {
     return self.text().then((text) => globalThis.___textEncoder.encode(text));
 }
 
-export async function blob(self) {
+export function blob(self) {
     const type = self.headers.get("content-type") || undefined;
     return self.arrayBuffer().then((buffer) => new Blob([buffer], { type }));
 }
 
-export async function formData(self) {
-    const body = await self.text();
+export function formData(self) {
+    const body = self.text();
     return parseMultipart(self.headers, body);
 }
 
-export async function json(self) {
+export function json(self) {
     return self.text().then((text) => JSON.parse(text));
 }
 
-export async function text(self) {
+export function text(self) {
     if (self.bodyUsed) {
         throw new TypeError("Body is already used");
     }
+
     if (!self.body) {
         self.bodyUsed = true;
         return "";
     }
+
     if (typeof self.body === "string") {
         self.bodyUsed = true;
         return self.body;
     }
+
     return new Promise((resolve) => {
         const reader = self.body.getReader();
         let result = "";
