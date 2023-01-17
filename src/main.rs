@@ -23,10 +23,10 @@ static ON_RESOLVE: OnceCell<SendWrapper<Value>> = OnceCell::new();
 static ON_REJECT: OnceCell<SendWrapper<Value>> = OnceCell::new();
 static RESPONSE: Lazy<Mutex<Option<Result<SendWrapper<Value>>>>> = Lazy::new(|| Mutex::new(None));
 
-// type Request = http::Request<Option<bytes::Bytes>>;
-
 fn main() -> Result<()> {
     let context = Context::default();
+
+    globals(&context, stderr(), stderr())?;
 
     let mut contents = String::new();
     let mut source = String::new();
@@ -41,7 +41,15 @@ fn main() -> Result<()> {
 
     let global = context.global_object()?;
 
-    globals(&context, stderr(), stderr())?;
+    let env = context.object_value()?;
+    for (key, value) in env::vars() {
+        env.set_property(key, context.value_from_str(&value)?)?;
+    }
+
+    let process = context.object_value()?;
+    process.set_property("env", env)?;
+
+    global.set_property("process", process)?;
 
     let on_resolve_wrap = context.wrap_callback(on_resolve)?;
     let on_reject_wrap = context.wrap_callback(on_reject)?;
@@ -59,8 +67,6 @@ fn main() -> Result<()> {
     }
 
     let args = env::args().collect::<Vec<String>>();
-
-    // TODO: set env as globals
 
     // @see: https://github.com/fermyon/spin-js-sdk/blob/569b76d32c06d44d9b6c928e526c82594782c4cb/crates/spin-js-engine/src/lib.rs#L552
     let output = handler.call(&global, &[request::set_request(args, &context)?])?;

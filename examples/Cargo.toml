@@ -16,6 +16,10 @@ name = "runtime"
 path = "runtime/src/main.rs"
 
 [[example]]
+name = "env"
+path = "env/src/main.rs"
+
+[[example]]
 name = "logger"
 path = "logger/src/main.rs"
 
