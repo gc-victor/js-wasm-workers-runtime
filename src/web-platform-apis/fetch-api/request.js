@@ -76,7 +76,7 @@ class Request {
                 }
             })();
 
-        if ((this.method === "GET" || this.method === "HEAD") && body) {
+        if ((this.method === "GET" || this.method === "HEAD") && this.body) {
             throw new TypeError("Body not allowed for GET or HEAD requests");
         }
 

@@ -9,11 +9,12 @@ where
 {
     let global = context.global_object()?;
 
-    let console_log_callback = context.wrap_callback(console_log_to(log_stream))?;
-    let console_error_callback = context.wrap_callback(console_log_to(error_stream))?;
     let console_object = context.object_value()?;
-    console_object.set_property("log", console_log_callback)?;
-    console_object.set_property("error", console_error_callback)?;
+    console_object.set_property("log", context.wrap_callback(console_log_to(log_stream))?)?;
+    console_object.set_property(
+        "error",
+        context.wrap_callback(console_log_to(error_stream))?,
+    )?;
 
     global.set_property("console", console_object)?;
     global.set_property("___logger", context.wrap_callback(logger)?)?;

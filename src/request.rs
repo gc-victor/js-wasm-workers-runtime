@@ -21,7 +21,7 @@ pub struct HttpRequest {
     pub url: String,
 }
 
-pub fn set_request(args: Vec<String>, context: &Context) -> Result<Value> {
+pub fn request(args: Vec<String>, context: &Context) -> Result<Value> {
     let mut serializer = Serializer::from_context(context)?;
     let request: HttpRequest = serde_json::from_str(&args[0])?;
     request.serialize(&mut serializer)?;
@@ -42,7 +42,7 @@ pub fn set_request(args: Vec<String>, context: &Context) -> Result<Value> {
                 body: '{body}',
                 cache: '{cache}',
                 credentials: '{credentials}',
-                headers: {headers},
+                headers: {{ {headers} }},
                 integrity: '{integrity}',
                 method: '{method}',
                 mode: '{mode}',
@@ -54,7 +54,7 @@ pub fn set_request(args: Vec<String>, context: &Context) -> Result<Value> {
         body = str_body,
         cache = request.cache.unwrap_or_default(),
         credentials = request.credentials.unwrap_or_default(),
-        headers = format!("{{ {} }}", headers.join(", ")),
+        headers = headers.join(", "),
         integrity = request.integrity.unwrap_or_default(),
         method = request.method,
         mode = request.mode.unwrap_or_default(),

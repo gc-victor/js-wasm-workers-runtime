@@ -13,6 +13,10 @@ pnpm:
 esbuild:
 	./node_modules/.bin/esbuild --bundle --format=iife --minify --tree-shaking=false --outfile=dist/web-platform-apis.js src/web-platform-apis/index.js
 
+clean:
+	cargo clean
+	rm Cargo.lock
+
 run:
 	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo run --target wasm32-wasi
@@ -25,9 +29,11 @@ release: esbuild
 	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo build --target wasm32-wasi --release
 
+# Run the examples
 example:
-	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml
+	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml --release
 
+# Install wasi-sdk
 install_wasi_sdk:
 	@echo "Installing WASI SDK..."
 	[ -d ./wasi-sdk ] && \
@@ -37,6 +43,14 @@ install_wasi_sdk:
 	tar xvf wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz && \
 	mv wasi-sdk-${WASI_VERSION_FULL} wasi-sdk && \
 	rm wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz \
+
+improve:
+	# --all-target: apply clippy to all targets
+	# --all-features: check all available features
+	# --workspace: check all packages in a workspace
+	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
+	cargo clippy --all-targets --all-features --workspace -- -D warnings
+	cargo fmt --all -- --check
 
 # catch anything and do nothing
 %:

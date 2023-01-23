@@ -1,23 +1,27 @@
 [package]
-name = "runtime"
+name = "examples"
 version = "0.1.0"
 edition = "2021"
 
 [dependencies]
 anyhow = "1.0.66"
+jwwr-run = { path = "../crates/run" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0.85"
-wasi-common = "4.0.0"
-wasmtime = "4.0.0"
-wasmtime-wasi = "4.0.0"
+wasi-common = "5.0.0"
+wasmtime = "5.0.0"
+wasmtime-wasi = "5.0.0"
 
-[[example]]
-name = "runtime"
-path = "runtime/src/main.rs"
+[profile.release]
+debug = true
 
 [[example]]
 name = "env"
 path = "env/src/main.rs"
+
+[[example]]
+name = "fetch"
+path = "fetch/src/main.rs"
 
 [[example]]
 name = "logger"
@@ -30,3 +34,7 @@ path = "request-json/src/main.rs"
 [[example]]
 name = "request-text"
 path = "request-text/src/main.rs"
+
+[[example]]
+name = "runtime"
+path = "runtime/src/main.rs"

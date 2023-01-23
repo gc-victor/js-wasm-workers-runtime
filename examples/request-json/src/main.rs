@@ -1,4 +1,7 @@
-use std::{str, sync::{Arc, RwLock}};
+use std::{
+    str,
+    sync::{Arc, RwLock},
+};
 
 use anyhow::Result;
 use wasi_common::pipe::{ReadPipe, WritePipe};
@@ -14,7 +17,10 @@ fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
     let handler = handler
         .trim()
-        .replace("export const handleRequest = ", "globalThis.handleRequest = ")
+        .replace(
+            "export const handleRequest = ",
+            "globalThis.handleRequest = ",
+        )
         .replace(
             "export async function handleRequest",
             "async function handleRequest",
@@ -67,7 +73,6 @@ fn main() -> Result<()> {
         .call(&mut store, ())
         .unwrap();
 
-    // read the response into a string
     let mut buffer: Vec<u8> = Vec::new();
 
     stdout_mutex

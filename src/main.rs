@@ -11,13 +11,13 @@ use once_cell::sync::{Lazy, OnceCell};
 use quickjs_wasm_rs::{json, Context, Exception, Value};
 use send_wrapper::SendWrapper;
 
+mod fetch;
 mod globals;
-
-use globals::globals;
-
 mod request;
 
-static POLYFILL: &str = include_str!("../dist/web-platform-apis.js");
+use fetch::fetch::fetch;
+
+static WEB_PLATFORM_APIS: &str = include_str!("../dist/web-platform-apis.js");
 
 static ON_RESOLVE: OnceCell<SendWrapper<Value>> = OnceCell::new();
 static ON_REJECT: OnceCell<SendWrapper<Value>> = OnceCell::new();
@@ -26,12 +26,13 @@ static RESPONSE: Lazy<Mutex<Option<Result<SendWrapper<Value>>>>> = Lazy::new(|| 
 fn main() -> Result<()> {
     let context = Context::default();
 
-    globals(&context, stderr(), stderr())?;
+    globals::globals(&context, stderr(), stderr())?;
+    fetch(&context)?;
 
     let mut contents = String::new();
     let mut source = String::new();
 
-    contents.push_str(&POLYFILL);
+    contents.push_str(WEB_PLATFORM_APIS);
 
     stdin().read_to_string(&mut source)?;
 
@@ -69,11 +70,9 @@ fn main() -> Result<()> {
     let args = env::args().collect::<Vec<String>>();
 
     // @see: https://github.com/fermyon/spin-js-sdk/blob/569b76d32c06d44d9b6c928e526c82594782c4cb/crates/spin-js-engine/src/lib.rs#L552
-    let output = handler.call(&global, &[request::set_request(args, &context)?])?;
+    let output = handler.call(&global, &[request::request(args, &context)?])?;
     let then = output.get_property("then")?;
-    let response: Vec<u8>;
-
-    if then.is_function() {
+    let response = if then.is_function() {
         then.call(
             &output,
             &[on_resolve.deref().clone(), on_reject.deref().clone()],
@@ -81,13 +80,13 @@ fn main() -> Result<()> {
 
         context.execute_pending()?;
 
-        response = json::transcode_output(RESPONSE.lock().unwrap().take().unwrap()?.take())?;
+        json::transcode_output(RESPONSE.lock().unwrap().take().unwrap()?.take())?
     } else {
-        response = json::transcode_output(output)?;
-    }
+        json::transcode_output(output)?
+    };
 
     stdout()
-        .write(&response)
+        .write_all(&response)
         .expect("Error when returning the response");
 
     stdout().flush().expect("Error when returning the response");

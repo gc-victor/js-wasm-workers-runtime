@@ -4,5 +4,6 @@
 /wasi-sdk
 /node_modules/
 /dist/
+/crates/**/target/
 /examples/**/target/ 
-.vscode
+.cargo
