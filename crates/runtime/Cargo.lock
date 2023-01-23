@@ -908,7 +908,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "jwwr-run"
+name = "js-wasm-workers-runtime"
 version = "0.1.0"
 dependencies = [
  "anyhow",

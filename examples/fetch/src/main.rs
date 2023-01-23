@@ -1,7 +1,7 @@
 use std::str;
 
 use anyhow::Result;
-use jwwr_run::run;
+use js_wasm_workers_runtime::runtime;
 
 fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
@@ -20,15 +20,14 @@ fn main() -> Result<()> {
     let request = r#"{
         "body": null,
         "headers": {
-            "content-type": "application/json",
-            "x-test": "test"
+            "content-type": "application/json"
         },
         "method": "GET",
         "url": "https://my-json-server.typicode.com/typicode/demo/posts"
     }"#
     .to_string();
 
-    let buffer = run(&handler, &request)?;
+    let buffer = runtime(&handler, &request)?;
 
     println!("returned: {:?}", String::from_utf8(buffer)?);
 

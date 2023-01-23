@@ -16,7 +16,7 @@ use import_send_request::import_send_request;
 static WASM: &[u8] =
     include_bytes!("../../../target/wasm32-wasi/release/js-wasm-workers-runtime.wasm");
 
-pub fn run(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
+pub fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
     let handler = handler
         .trim()
         .replace(
