@@ -12,12 +12,6 @@ import { arrayBuffer, blob, formData, json, text } from "./utils.js";
  */
 class Request {
     constructor(input, options) {
-        if (!(this instanceof Request)) {
-            throw new TypeError(
-                'Please use the "new" operator, this DOM object constructor cannot be called as a function.',
-            );
-        }
-
         options = options || {};
 
         this._bodyInit = options.body;
@@ -106,23 +100,23 @@ class Request {
     }
 
     async arrayBuffer() {
-        return arrayBuffer(this);
+        return await arrayBuffer(this);
     }
 
     async blob() {
-        return blob(this);
+        return await blob(this);
     }
 
     async formData() {
-        return formData(this);
+        return await formData(this);
     }
 
     async json() {
-        return json(this);
+        return await json(this);
     }
 
     async text() {
-        return text(this);
+        return await text(this);
     }
 }
 

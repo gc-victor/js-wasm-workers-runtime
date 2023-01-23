@@ -1,83 +1,44 @@
-use std::sync::{Arc, RwLock};
+use std::collections::HashMap;
 
 use anyhow::Result;
-use serde::{self, Deserialize};
+use js_wasm_workers_runtime::runtime;
+use serde::Deserialize;
+use serde_bytes::ByteBuf;
 use serde_json;
-use std::collections::HashMap;
-use wasi_common::pipe::{ReadPipe, WritePipe};
-use wasmtime::*;
-use wasmtime_wasi::sync::WasiCtxBuilder;
 
+#[allow(dead_code)]
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
-pub struct Response {
-    pub body: Vec<u8>,
-    pub body_used: bool,
-    pub headers: HashMap<String, String>,
+struct Response {
+    pub status: usize,
+    pub ok: bool,
     pub status_text: String,
-    pub status: u16,
+    pub body: Option<ByteBuf>,
+    pub body_used: bool,
+    pub headers: Option<HashMap<String, String>>,
 }
 
 fn main() -> Result<()> {
-    // Define the WASI functions globally on the `Config`.
-    let engine = Engine::default();
-    let mut linker = Linker::new(&engine);
-    wasmtime_wasi::add_to_linker(&mut linker, |s| s)?;
-
     let handler: &str = include_str!("./handler.js");
-    let handler = handler
-        .trim()
-        .replace("export const handleRequest = ", "handleRequest = ")
-        .replace(
-            "export async function handleRequest",
-            "async function handleRequest",
-        );
-    let mut contents = String::new();
 
-    contents.push_str(&handler);
+    let body = "Hello World!".to_string();
+    let request = r#"{
+        "body": __BODY__,
+        "headers": {
+            "content-type": "application/json",
+            "x-test": "test"
+        },
+        "method": "POST",
+        "url": "https://test.test"
+    }"#
+    .to_string()
+    .replace("__BODY__", &format!("{:?}", body.as_bytes()));
 
-    // create a buffer to store the response
-    let stdout_buf: Vec<u8> = vec![];
-    let stdout_mutex = Arc::new(RwLock::new(stdout_buf));
-    let stdout = WritePipe::from_shared(stdout_mutex.clone());
-    let stdin = ReadPipe::from(contents);
+    let buffer = runtime(&handler, &request)?;
+    let response: Response = serde_json::from_str(&String::from_utf8(buffer)?)?;
+    let body = response.body.unwrap();
 
-    // TODO: use stderr to get the errors
-    let wasi = WasiCtxBuilder::new()
-        .stdin(Box::new(stdin))
-        .stdout(Box::new(stdout))
-        .arg(&"{}".to_string())?
-        .build();
-    let mut store = Store::new(&engine, wasi);
-
-    // path to the compiled wasm file from the root folder
-    let module = Module::from_file(
-        &engine,
-        "target/wasm32-wasi/release/js-wasm-workers-runtime.wasm",
-    )?;
-
-    linker.module(&mut store, "", &module)?;
-
-    linker
-        .get_default(&mut store, "")
-        .unwrap()
-        .typed::<(), ()>(&store)
-        .unwrap()
-        .call(&mut store, ())
-        .unwrap();
-
-    let mut buffer: Vec<u8> = Vec::new();
-
-    stdout_mutex
-        .read()
-        .map_err(|e| anyhow::Error::msg(format!("{:?}", e)))?
-        .iter()
-        .for_each(|i| buffer.push(*i));
-
-    let response: Response = serde_json::from_slice(&buffer)?;
-
-    println!("response: {:?}", response);
-    println!("body: {:?}", String::from_utf8(response.body)?);
+    println!("response: {:?}", String::from_utf8(body.into_vec())?);
 
     Ok(())
 }

@@ -595,6 +595,7 @@ dependencies = [
  "anyhow",
  "js-wasm-workers-runtime",
  "serde",
+ "serde_bytes",
  "serde_json",
  "wasi-common",
  "wasmtime",

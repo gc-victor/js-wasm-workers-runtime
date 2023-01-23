@@ -1,5 +1,5 @@
 export const handleRequest = async function (request) {
-    ___logger("event", JSON.stringify(request.text()));
+    ___logger("request", JSON.stringify(request));
 
     return new Response("", {
         status: 200,
