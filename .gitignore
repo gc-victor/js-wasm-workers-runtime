@@ -1,9 +1,9 @@
 /target/
 **/*.rs.bk
 !*.wasm
-/wasi-sdk
-/node_modules/
-/dist/
+/crates/**/wasi-sdk/
+/crates/**/dist/
+/crates/**/node_modules/
 /crates/**/target/
 /examples/**/target/ 
 .cargo

@@ -23,7 +23,7 @@ fn main() -> Result<()> {
             "content-type": "application/json"
         },
         "method": "GET",
-        "url": "https://my-json-server.typicode.com/typicode/demo/posts"
+        "url": "https://test.test"
     }"#
     .to_string();
 

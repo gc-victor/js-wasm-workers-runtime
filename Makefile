@@ -1,33 +1,29 @@
 ARGUMENTS = $(filter-out $@,$(MAKECMDGOALS))
 
 ROOT_DIR:=$(shell dirname $(realpath $(firstword $(MAKEFILE_LIST))))
-WASI_SDK ?= ${ROOT_DIR}/wasi-sdk
+WASI_SDK ?= ${ROOT_DIR}/crates/engine/wasi-sdk
 WASI_VERSION ?= 17
 WASI_VERSION_FULL ?= ${WASI_VERSION}.0
 
 build: install_wasi_sdk pnpm release
 
 pnpm:
-	pnpm install
+	make -C crates/engine pnpm
 
 esbuild:
-	./node_modules/.bin/esbuild --bundle --format=iife --minify --tree-shaking=false --outfile=dist/web-platform-apis.js src/web-platform-apis/index.js
+	make -C crates/engine esbuild 
 
 clean:
-	cargo clean
-	rm Cargo.lock
+	make -C crates/engine clean
 
 run:
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
-	cargo run --target wasm32-wasi
+	make -C crates/engine run
 
 debug: esbuild
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
-	cargo build --target wasm32-wasi
+	make -C crates/engine debug
 
 release: esbuild
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
-	cargo build --target wasm32-wasi --release
+	make -C crates/engine release
 
 # Run the examples
 example:
@@ -35,14 +31,7 @@ example:
 
 # Install wasi-sdk
 install_wasi_sdk:
-	@echo "Installing WASI SDK..."
-	[ -d ./wasi-sdk ] && \
-	echo "wasi_sdk is already installed." && \
-	exit || \
-	wget https://github.com/WebAssembly/wasi-sdk/releases/download/wasi-sdk-${WASI_VERSION}/wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz && \
-	tar xvf wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz && \
-	mv wasi-sdk-${WASI_VERSION_FULL} wasi-sdk && \
-	rm wasi-sdk-${WASI_VERSION_FULL}-linux.tar.gz \
+	make -C crates/engine install_wasi_sdk
 
 improve:
 	# --all-target: apply clippy to all targets

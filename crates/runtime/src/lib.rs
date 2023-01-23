@@ -3,7 +3,6 @@ use std::{
     sync::{Arc, RwLock},
 };
 
-use anyhow;
 use wasi_common::pipe::{ReadPipe, WritePipe};
 use wasmtime::*;
 use wasmtime_wasi::sync::WasiCtxBuilder;
@@ -14,7 +13,7 @@ mod import_send_request;
 use import_send_request::import_send_request;
 
 static WASM: &[u8] =
-    include_bytes!("../../../target/wasm32-wasi/release/js-wasm-workers-runtime.wasm");
+    include_bytes!("../../../target/wasm32-wasi/release/js-wasm-workers-engine.wasm");
 
 pub fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
     let handler = handler
