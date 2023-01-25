@@ -2,7 +2,7 @@ use anyhow::Result;
 use quickjs_wasm_rs::{Context, Value};
 use std::io::Write;
 
-pub fn globals<T1, T2>(context: &Context, log_stream: T1, error_stream: T2) -> Result<()>
+pub(crate) fn globals<T1, T2>(context: &Context, log_stream: T1, error_stream: T2) -> Result<()>
 where
     T1: Write + 'static,
     T2: Write + 'static,

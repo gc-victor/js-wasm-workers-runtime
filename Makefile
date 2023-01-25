@@ -41,6 +41,10 @@ improve:
 	cargo clippy --all-targets --all-features --workspace -- -D warnings
 	cargo fmt --all -- --check
 
+test-engine:
+	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
+	cargo wasi test --package js-wasm-workers-engine -- --nocapture 
+
 # catch anything and do nothing
 %:
 	@:

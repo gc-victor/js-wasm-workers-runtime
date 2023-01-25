@@ -14,6 +14,7 @@ use send_wrapper::SendWrapper;
 mod fetch;
 mod globals;
 mod request;
+mod tests;
 
 use fetch::fetch::fetch;
 

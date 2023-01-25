@@ -1,3 +1,5 @@
+const ___headers = Symbol();
+
 /*
  * Headers
  *
@@ -10,142 +12,151 @@
  * @see: https://fetch.spec.whatwg.org/#headers-class
  */
 class Headers {
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/Headers
-    constructor(headers) {
-        this.map = {};
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/Headers
+	constructor(init) {
+		this[___headers] = {};
 
-        if (headers instanceof Headers) {
-            headers.forEach(function (value, name) {
-                this.append(name, value);
-            }, this);
-        } else if (Array.isArray(headers)) {
-            headers.forEach(function (header) {
-                this.append(header[0], header[1]);
-            }, this);
-        } else if (headers) {
-            Object.getOwnPropertyNames(headers).forEach(function (name) {
-                this.append(name, headers[name]);
-            }, this);
-        }
-    }
+		if (init instanceof Headers) {
+			init.forEach(function (value, name) {
+				this.append(name, value);
+			}, this);
+		} else if (Array.isArray(init)) {
+			init.forEach(function (header) {
+				if (header.length !== 2) {
+					throw new TypeError("Failed to construct 'Headers': Invalid value");
+				}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/append
-    append(name, value) {
-        name = normalizeName(name);
-        value = normalizeValue(value);
+				this.append(header[0], header[1]);
+			}, this);
+		} else if (init) {
+			Object.getOwnPropertyNames(init).forEach(function (name) {
+				this.append(name, init[name]);
+			}, this);
+		} else if (init === null) {
+			throw new TypeError(
+				"Failed to construct 'Headers': The provided value is null",
+			);
+		}
+	}
 
-        const oldValue = this.map[name];
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/append
+	append(name, value) {
+		name = normalizeName(name);
+		value = normalizeValue(value);
 
-        this.map[name] = oldValue ? `${oldValue}, ${value}` : value;
-    }
+		const oldValue = this[___headers][name];
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
-    get(name) {
-        name = normalizeName(name);
+		this[___headers][name] = oldValue ? `${oldValue}, ${value}` : value;
+	}
 
-        return this.has(name) ? this.map[name] : null;
-    }
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
+	get(name) {
+		name = normalizeName(name);
 
-    getAll() {
-        return this.map;
-    }
+		return this.has(name) ? this[___headers][name] : null;
+	}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
-    has(name) {
-        return this.map.hasOwnProperty(normalizeName(name));
-    }
+	getAll() {
+		return this[___headers];
+	}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/set
-    set(name, value) {
-        this.map[normalizeName(name)] = normalizeValue(value);
-    }
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
+	has(name) {
+		return this[___headers].hasOwnProperty(normalizeName(name));
+	}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/delete
-    delete(name) {
-        this.map[normalizeName(name)] = undefined;
-    }
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/set
+	set(name, value) {
+		this[___headers][normalizeName(name)] = normalizeValue(value);
+	}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/forEach
-    forEach(callback, thisArg) {
-        for (const name in this.map) {
-            if (this.map.hasOwnProperty(name)) {
-                callback.call(thisArg, this.map[name], name, this);
-            }
-        }
-    }
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/delete
+	delete(name) {
+		this[___headers][normalizeName(name)] = null;
+	}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/keys
-    keys() {
-        const items = [];
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/forEach
+	forEach(callback, thisArg) {
+		for (const name in this[___headers]) {
+			if (this[___headers].hasOwnProperty(name)) {
+				callback.call(thisArg, this[___headers][name], name, this);
+			}
+		}
+	}
 
-        this.forEach((_, name) => {
-            items.push(name);
-        });
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/keys
+	keys() {
+		const items = [];
 
-        return iteratorFor(items);
-    }
+		this.forEach((_, name) => {
+			items.push(name);
+		});
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/values
-    values() {
-        const items = [];
+		return iteratorFor(items);
+	}
 
-        this.forEach((value) => {
-            items.push(value);
-        });
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/values
+	values() {
+		const items = [];
 
-        return iteratorFor(items);
-    }
+		this.forEach((value) => {
+			items.push(value);
+		});
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/entries
-    entries() {
-        const items = [];
+		return iteratorFor(items);
+	}
 
-        this.forEach((value, name) => {
-            items.push([name, value]);
-        });
+	// @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/entries
+	entries() {
+		const items = [];
 
-        return iteratorFor(items);
-    }
+		this.forEach((value, name) => {
+			items.push([name, value]);
+		});
+
+		return iteratorFor(items);
+	}
 }
 
 globalThis.Headers = Headers;
 
 function normalizeName(name) {
-    if (typeof name !== "string") {
-        name = String(name);
-    }
+	if (typeof name !== "string") {
+		name = String(name);
+	}
 
-    if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name) || name === "") {
-        throw new TypeError(
-            `Invalid character in header field name: "${name}"`,
-        );
-    }
+	name = name.replace(/^[\n\t\r\x20]+|[\n\t\r\x20]+$/g, "");
 
-    return name.toLowerCase();
+	// TODO: implement a test for ["\t\f\tnewLine4\n","\f\tnewLine"], result \f\tnewLine
+	// TODO: implement a test for ["newLine5\xa0","newLine5\xa0"], result newLine5\xa0
+
+	if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name) || name === "") {
+		throw new TypeError(`Invalid character in header field name: "${name}"`);
+	}
+
+	return name.toLowerCase();
 }
 
 function normalizeValue(value) {
-    if (typeof value !== "string") {
-        value = String(value);
-    }
+	if (typeof value !== "string") {
+		value = String(value);
+	}
 
-    return value;
+	return value;
 }
 
 function iteratorFor(items) {
-    var iterator = {
-        next: function () {
-            var value = items.shift();
+	const iterator = {
+		next: function () {
+			var value = items.shift();
 
-            return { done: value === undefined, value: value };
-        },
-    };
+			return { done: value === undefined, value };
+		},
+	};
 
-    if (support.iterable) {
-        iterator[Symbol.iterator] = function () {
-            return iterator;
-        };
-    }
+	iterator[Symbol.iterator] = function () {
+		return iterator;
+	};
 
-    return iterator;
+	return iterator;
 }

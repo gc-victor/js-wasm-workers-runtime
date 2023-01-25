@@ -5,6 +5,8 @@ WASI_SDK ?= ${ROOT_DIR}/wasi-sdk
 WASI_VERSION ?= 17
 WASI_VERSION_FULL ?= ${WASI_VERSION}.0
 
+export QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK)
+
 build: install_wasi_sdk pnpm release
 
 pnpm:
@@ -18,15 +20,12 @@ clean:
 	rm Cargo.lock
 
 run:
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo run --target wasm32-wasi
 
 debug: esbuild
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo build --target wasm32-wasi
 
 release: esbuild
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo build --target wasm32-wasi --release
 
 # Run the examples
@@ -48,7 +47,6 @@ improve:
 	# --all-target: apply clippy to all targets
 	# --all-features: check all available features
 	# --workspace: check all packages in a workspace
-	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo clippy --all-targets --all-features --workspace -- -D warnings
 	cargo fmt --all -- --check
 

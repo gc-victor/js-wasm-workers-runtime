@@ -13,9 +13,6 @@ wasi-common = "5.0.0"
 wasmtime = "5.0.0"
 wasmtime-wasi = "5.0.0"
 
-[profile.release]
-debug = true
-
 [[example]]
 name = "env"
 path = "env/src/main.rs"

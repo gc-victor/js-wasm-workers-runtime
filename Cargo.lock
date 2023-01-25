@@ -619,9 +619,9 @@ dependencies = [
 
 [[package]]
 name = "fd-lock"
-version = "3.0.8"
+version = "3.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bb21c69b9fea5e15dbc1049e4b77145dd0ba1c84019c488102de0dc4ea4b0a27"
+checksum = "28c0190ff0bd3b28bfdd4d0cf9f92faa12880fb0b8ae2054723dd6c76a4efd42"
 dependencies = [
  "cfg-if",
  "rustix",
@@ -1355,9 +1355,9 @@ dependencies = [
 
 [[package]]
 name = "quickjs-wasm-rs"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2fc90a16e3abedd809e255dfaa0238b72f47d4fc4a0458fe6339589a18379f2f"
+checksum = "59df5802c3d2e9c60eed0fc64a121e7ed55cb0a40510bfb06da69a5ace3a0227"
 dependencies = [
  "anyhow",
  "once_cell",
@@ -1369,9 +1369,9 @@ dependencies = [
 
 [[package]]
 name = "quickjs-wasm-sys"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7318c0c995b732f6c1c2a80a122e3b8a619e1509807f06094c9961e86f627384"
+checksum = "3c9365ccac1140cfccc32a93eeddd4f4ceab75c977f0001e927f9847ffe1a854"
 dependencies = [
  "bindgen",
  "cc",
