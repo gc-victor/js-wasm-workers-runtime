@@ -3,7 +3,8 @@ use std::str;
 use anyhow::Result;
 use js_wasm_workers_runtime::runtime;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
     // let body = serde_json::json!({"hello": "world"}).to_string();
     // let request = r#"{
@@ -27,7 +28,7 @@ fn main() -> Result<()> {
     }"#
     .to_string();
 
-    let buffer = runtime(&handler, &request)?;
+    let buffer = runtime(&handler, &request).await?;
 
     println!("returned: {:?}", String::from_utf8(buffer)?);
 

@@ -5,7 +5,7 @@ use std::{
 
 use wasi_common::pipe::{ReadPipe, WritePipe};
 use wasmtime::*;
-use wasmtime_wasi::sync::WasiCtxBuilder;
+use wasmtime_wasi::tokio::WasiCtxBuilder;
 
 mod http;
 mod import_send_request;
@@ -15,7 +15,7 @@ use import_send_request::import_send_request;
 static WASM: &[u8] =
     include_bytes!("../../../target/wasm32-wasi/release/js-wasm-workers-engine.wasm");
 
-pub fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
+pub async fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
     let handler = handler
         .trim()
         .replace(
@@ -37,22 +37,28 @@ pub fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
         .args(&[request.to_string()])?
         .build();
 
-    let engine = Engine::default();
+    let mut config = Config::new();
+    let engine = Engine::new(&config.async_support(true))?;
+    let module = Module::from_binary(&engine, WASM)?;
     let mut linker = Linker::new(&engine);
-    wasmtime_wasi::add_to_linker(&mut linker, |s| s)?;
 
-    linker.func_wrap("env", "import_send_request", import_send_request)?;
+    wasmtime_wasi::tokio::add_to_linker(&mut linker, |cx| cx)?;
+
+    linker.func_wrap1_async("env", "import_send_request", import_send_request)?;
 
     let mut store = Store::new(&engine, wasi);
-    let module = Module::from_binary(&engine, WASM)?;
+    let instance = linker.instantiate_async(&mut store, &module).await?;
+    instance
+        .get_typed_func::<(), ()>(&mut store, "_start")?
+        .call_async(&mut store, ())
+        .await?;
 
-    linker.module(&mut store, "", &module)?;
-    linker
-        .get_default(&mut store, "")?
-        .typed::<(), ()>(&store)?
-        .call(&mut store, ())?;
+    // linker
+    //     .get_default(&mut store, "")?
+    //     .typed::<(), ()>(&store)?
+    //     .call(&mut store, ())?;
 
-    let mut buffer: Vec<u8> = Vec::new();
+    let mut buffer = Vec::new();
 
     stdout_mutex
         .read()

@@ -1,7 +1,8 @@
 use anyhow::Result;
 use js_wasm_workers_runtime::runtime;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
 
     let request = r#"{
@@ -14,7 +15,7 @@ fn main() -> Result<()> {
     }"#
     .to_string();
 
-    let buffer = runtime(&handler, &request)?;
+    let buffer = runtime(&handler, &request).await?;
 
     println!("returned: {:?}", String::from_utf8(buffer)?);
 

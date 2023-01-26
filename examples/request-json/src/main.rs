@@ -1,7 +1,8 @@
 use anyhow::Result;
 use js_wasm_workers_runtime::runtime;
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
 
     let body = serde_json::json!({"hello": "world"}).to_string();
@@ -17,7 +18,7 @@ fn main() -> Result<()> {
     .to_string()
     .replace("__BODY__", &format!("{:?}", body.as_bytes()));
 
-    let buffer = runtime(&handler, &request)?;
+    let buffer = runtime(&handler, &request).await?;
 
     println!("returned: {:?}", String::from_utf8(buffer)?);
 

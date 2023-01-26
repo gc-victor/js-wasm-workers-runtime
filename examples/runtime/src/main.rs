@@ -18,7 +18,8 @@ struct Response {
     pub headers: Option<HashMap<String, String>>,
 }
 
-fn main() -> Result<()> {
+#[tokio::main]
+async fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
 
     let body = "Hello World!".to_string();
@@ -34,7 +35,7 @@ fn main() -> Result<()> {
     .to_string()
     .replace("__BODY__", &format!("{:?}", body.as_bytes()));
 
-    let buffer = runtime(&handler, &request)?;
+    let buffer = runtime(&handler, &request).await?;
     let response: Response = serde_json::from_str(&String::from_utf8(buffer)?)?;
     let body = response.body.unwrap();
 
