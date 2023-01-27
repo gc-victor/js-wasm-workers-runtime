@@ -89,8 +89,7 @@ export async function blob(self) {
 }
 
 export async function formData(self) {
-    const body = await self.text();
-    return new Promise((resolve) => resolve(parseMultipart(self.headers, body)));
+    return self.text().then((text) => parseMultipart(self.headers, text));
 }
 
 export async function json(self) {
@@ -102,19 +101,25 @@ export async function text(self) {
         throw new TypeError("Body is already used");
     }
 
+    self.bodyUsed = true;
+
     if (!self.body) {
-        self.bodyUsed = true;
         return "";
     }
 
     if (typeof self.body === "string") {
-        self.bodyUsed = true;
         return self.body;
     }
 
-    return new Promise((resolve) =>
-        resolve(globalThis.___textDecoder.decode(self.body)),
-    );
+    if (!(self.body instanceof ArrayBuffer)) {
+        return JSON.stringify(self.body);
+    }
+
+    return new Promise((resolve) => {
+        this.textDecoder = new TextDecoder();
+
+        resolve(this.textDecoder.decode(self.body));
+    });
 }
 
 export const statusTextList = {

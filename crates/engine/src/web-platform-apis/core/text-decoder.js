@@ -1,53 +1,74 @@
-class TextDecoder {
-    constructor() {
-        this.encoding = "utf-8";
-        this.fatal = true;
-        this.ignoreBOM = true;
-    }
-    decode(input) {
-        const bytes = new Uint8Array(input);
-        let pos = 0;
-        const len = bytes.length;
-        const out = [];
-        while (pos < len) {
-            const byte1 = bytes[pos++];
-            if (byte1 === 0) {
-                break; // NULL
-            }
-            if ((byte1 & 0x80) === 0) {
-                // 1-byte
-                out.push(byte1);
-            } else if ((byte1 & 0xe0) === 0xc0) {
-                // 2-byte
-                const byte2 = bytes[pos++] & 0x3f;
-                out.push(((byte1 & 0x1f) << 6) | byte2);
-            } else if ((byte1 & 0xf0) === 0xe0) {
-                const byte2 = bytes[pos++] & 0x3f;
-                const byte3 = bytes[pos++] & 0x3f;
-                out.push(((byte1 & 0x1f) << 12) | (byte2 << 6) | byte3);
-            } else if ((byte1 & 0xf8) === 0xf0) {
-                const byte2 = bytes[pos++] & 0x3f;
-                const byte3 = bytes[pos++] & 0x3f;
-                const byte4 = bytes[pos++] & 0x3f;
-                // this can be > 0xffff, so possibly generate surrogates
-                let codepoint =
-                    ((byte1 & 0x07) << 0x12) |
-                    (byte2 << 0x0c) |
-                    (byte3 << 0x06) |
-                    byte4;
-                if (codepoint > 0xffff) {
-                    // codepoint &= ~0x10000;
-                    codepoint -= 0x10000;
-                    out.push(((codepoint >>> 10) & 0x3ff) | 0xd800);
-                    codepoint = 0xdc00 | (codepoint & 0x3ff);
-                }
-                out.push(codepoint);
-            } else {
-                // FIXME: we're ignoring this
-            }
-        }
-        return String.fromCharCode.apply(null, out);
-    }
-}
+// @see: https://developer.mozilla.org/en-US/docs/Web/API/TextDecoder
+// @see: https://github.com/Shopify//blob/066dbb00c88413bf64ef5f73c6d81cc2c6b168c6/crates/core/prelude/text-encoding.js
+(function () {
+    const ___decodeUtf8BufferToString = globalThis.___decodeUtf8BufferToString;
 
-globalThis.TextDecoder = TextDecoder;
+    class TextDecoder {
+        constructor(label = "utf-8", options = {}) {
+            label = label.trim().toLowerCase();
+            const acceptedLabels = [
+                "utf-8",
+                "utf8",
+                "unicode-1-1-utf-8",
+                "unicode11utf8",
+                "unicode20utf8",
+                "x-unicode20utf8",
+            ];
+            if (!acceptedLabels.includes(label)) {
+                // Not spec-compliant behaviour
+                throw new RangeError(
+                    "The encoding label provided must be utf-8",
+                );
+            }
+            Object.defineProperties(this, {
+                encoding: { value: "utf-8", enumerable: true, writable: false },
+                fatal: {
+                    value: !!options.fatal,
+                    enumerable: true,
+                    writable: false,
+                },
+                ignoreBOM: {
+                    value: !!options.ignoreBOM,
+                    enumerable: true,
+                    writable: false,
+                },
+            });
+        }
+
+        decode(input, options = {}) {
+            if (input === undefined) {
+                return "";
+            }
+
+            if (options.stream) {
+                throw new Error("Streaming decode is not supported");
+            }
+
+            // backing buffer would not have byteOffset and may have different byteLength
+            let byteOffset = input.byteOffset || 0;
+            let byteLength = input.byteLength;
+
+            if (ArrayBuffer.isView(input)) {
+                input = input.buffer;
+            }
+
+            if (!(input instanceof ArrayBuffer)) {
+                throw new TypeError(
+                    "The provided value is not of type '(ArrayBuffer or ArrayBufferView)'",
+                );
+            }
+
+            return ___decodeUtf8BufferToString(
+                input,
+                byteOffset,
+                byteLength,
+                this.fatal,
+                this.ignoreBOM,
+            );
+        }
+    }
+
+    globalThis.TextDecoder = TextDecoder;
+
+    Reflect.deleteProperty(globalThis, "___decodeUtf8BufferToString");
+})();

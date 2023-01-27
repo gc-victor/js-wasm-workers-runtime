@@ -12,7 +12,7 @@ function fetch(url, options) {
     const response = JSON.parse(strResponse);
 
     return Promise.resolve(
-        new Response(response.body, {
+        new Response(new Uint8Array(response.body).buffer, {
             status: response.status,
             url,
             headers: JSON.parse(response.headers),

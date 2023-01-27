@@ -35,5 +35,13 @@ name = "request-text"
 path = "request-text/src/main.rs"
 
 [[example]]
-name = "runtime"
-path = "runtime/src/main.rs"
+name = "response"
+path = "response/src/main.rs"
+
+[[example]]
+name = "response-json"
+path = "response-json/src/main.rs"
+
+[[example]]
+name = "response-text"
+path = "response-text/src/main.rs"

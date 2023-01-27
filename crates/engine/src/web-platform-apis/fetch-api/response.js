@@ -12,10 +12,12 @@ import {
 // @see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
 class Response {
     constructor(body, options = {}) {
+        this.textEncoder = new TextEncoder();
+        
         this.body = hasNullBody(options.status) ? null : body;
         this.body =
             typeof this.body === "string"
-                ? globalThis.___textEncoder.encode(this.body).buffer
+                ? this.textEncoder.encode(this.body).buffer
                 : this.body;
         this.bodyUsed = false;
         this.status = options.status || 200;

@@ -11,6 +11,3 @@ import "./fetch-api/headers.js";
 import "./fetch-api/request.js";
 import "./fetch-api/response.js";
 import "./fetch-api/fetch.js";
-
-globalThis.___textEncoder = new TextEncoder();
-globalThis.___textDecoder = new TextDecoder();

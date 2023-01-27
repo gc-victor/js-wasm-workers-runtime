@@ -426,7 +426,6 @@ mod tests {
         Ok(())
     }
 
-    // TODO: test_headers_normalize_value
     #[test]
     fn test_headers_normalize_value() -> Result<()> {
         let mut ctx = Context::new();
