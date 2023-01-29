@@ -1,16 +1,15 @@
-// @see: https://github.com/web-platform-tests/wpt/tree/master/fetch/api/headers
 // @see: https://fetch.spec.whatwg.org/#headers-class
+// @see: https://github.com/web-platform-tests/wpt/tree/master/fetch/api/headers
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
 
-    use crate::tests::utils::context::Context;
+    use crate::tests::test_utils::context::Context;
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/Headers
     #[test]
     fn test_headers_constructor() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         // Without headers
         ctx.eval(
@@ -20,6 +19,8 @@ mod tests {
             "#,
         )?;
 
+        assert_eq!("{}", ctx.global.get_property("header_value")?.as_str()?);
+
         // Undefined
         ctx.eval(
             r#"
@@ -28,7 +29,7 @@ mod tests {
             "#,
         )?;
 
-        assert_eq!("{}", global.get_property("header_value")?.as_str()?);
+        assert_eq!("{}", ctx.global.get_property("header_value")?.as_str()?);
 
         // Object
         ctx.eval(
@@ -40,7 +41,7 @@ mod tests {
 
         assert_eq!(
             r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
 
         // Array
@@ -53,7 +54,7 @@ mod tests {
 
         assert_eq!(
             r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
 
         // TODO: test case where the array contains an array with more than 2 elements
@@ -69,13 +70,13 @@ mod tests {
 
         assert_eq!(
             r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
 
         // // Null
         // // @see: https://github.com/web-platform-tests/wpt/blob/master/fetch/api/headers/headers-record.any.js#L35
         assert_eq!(
-            "Uncaught TypeError: Failed to construct 'Headers': The provided value is null\n    at Ge (context.js)\n    at <eval> (context.js:5)\n",
+            "Uncaught TypeError: Failed to construct 'Headers': The provided value is null\n    at Ve (context.js)\n    at <eval> (context.js:2)\n",
             ctx.eval(r#"var headers = new Headers(null);"#)
                 .unwrap_err()
                 .to_string()
@@ -105,8 +106,6 @@ mod tests {
         assert!(headers.get_property("values")?.is_function());
         assert!(headers.get_property("entries")?.is_function());
 
-        ctx.stream.clear();
-
         Ok(())
     }
 
@@ -114,7 +113,6 @@ mod tests {
     #[test]
     fn test_headers_append() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         // Create header
         ctx.eval(
@@ -127,10 +125,8 @@ mod tests {
 
         assert_eq!(
             r#"application/json"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
-
-        ctx.stream.clear();
 
         // Append new value
         ctx.eval(
@@ -146,10 +142,8 @@ mod tests {
 
         assert_eq!(
             r#"deflate, gzip"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
-
-        ctx.stream.clear();
 
         Ok(())
     }
@@ -158,7 +152,6 @@ mod tests {
     #[test]
     fn test_headers_get() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -170,10 +163,8 @@ mod tests {
 
         assert_eq!(
             r#"application/json"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
-
-        ctx.stream.clear();
 
         Ok(())
     }
@@ -181,7 +172,6 @@ mod tests {
     #[test]
     fn test_headers_get_all() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -192,10 +182,8 @@ mod tests {
 
         assert_eq!(
             r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
-            global.get_property("header_value")?.as_str()?
+            ctx.global.get_property("header_value")?.as_str()?
         );
-
-        ctx.stream.clear();
 
         Ok(())
     }
@@ -204,7 +192,6 @@ mod tests {
     #[test]
     fn test_headers_has() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         // True
         ctx.eval(
@@ -215,9 +202,7 @@ mod tests {
         "#,
         )?;
 
-        assert_eq!("true", global.get_property("header_value")?.as_str()?);
-
-        ctx.stream.clear();
+        assert_eq!("true", ctx.global.get_property("header_value")?.as_str()?);
 
         // False
         ctx.eval(
@@ -228,9 +213,7 @@ mod tests {
         "#,
         )?;
 
-        assert_eq!("false", global.get_property("header_value")?.as_str()?);
-
-        ctx.stream.clear();
+        assert_eq!("false", ctx.global.get_property("header_value")?.as_str()?);
 
         Ok(())
     }
@@ -239,7 +222,6 @@ mod tests {
     #[test]
     fn test_headers_set() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -249,7 +231,10 @@ mod tests {
             "#,
         )?;
 
-        assert_eq!("text/plain", global.get_property("header_value")?.as_str()?);
+        assert_eq!(
+            "text/plain",
+            ctx.global.get_property("header_value")?.as_str()?
+        );
 
         Ok(())
     }
@@ -258,7 +243,6 @@ mod tests {
     #[test]
     fn test_headers_delete() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -269,7 +253,7 @@ mod tests {
             "#,
         )?;
 
-        assert_eq!("null", global.get_property("header_value")?.as_str()?);
+        assert_eq!("null", ctx.global.get_property("header_value")?.as_str()?);
 
         Ok(())
     }
@@ -278,7 +262,6 @@ mod tests {
     #[test]
     fn test_headers_for_each() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -295,12 +278,12 @@ mod tests {
 
         assert_eq!(
             "application/json,Bearer 12345",
-            global.get_property("header_values")?.as_str()?
+            ctx.global.get_property("header_values")?.as_str()?
         );
 
         assert_eq!(
             "content-type,authorization",
-            global.get_property("header_names")?.as_str()?
+            ctx.global.get_property("header_names")?.as_str()?
         );
 
         Ok(())
@@ -310,7 +293,6 @@ mod tests {
     #[test]
     fn test_headers_keys() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -327,7 +309,7 @@ mod tests {
 
         assert_eq!(
             "content-type,authorization",
-            global.get_property("header_keys")?.as_str()?
+            ctx.global.get_property("header_keys")?.as_str()?
         );
 
         Ok(())
@@ -337,7 +319,6 @@ mod tests {
     #[test]
     fn test_headers_values() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -354,7 +335,7 @@ mod tests {
 
         assert_eq!(
             "application/json,Bearer 12345",
-            global.get_property("header_values")?.as_str()?
+            ctx.global.get_property("header_values")?.as_str()?
         );
 
         Ok(())
@@ -364,7 +345,6 @@ mod tests {
     #[test]
     fn test_headers_entries() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -381,7 +361,7 @@ mod tests {
 
         assert_eq!(
             "content-type: application/json,authorization: Bearer 12345",
-            global.get_property("header_entries")?.as_str()?
+            ctx.global.get_property("header_entries")?.as_str()?
         );
 
         Ok(())
@@ -392,7 +372,6 @@ mod tests {
     #[test]
     fn test_headers_normalize_name() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -420,7 +399,7 @@ mod tests {
 
         assert_eq!(
             r#"content-type,authorization,space,tab,spaceandtab,newline1,newline2,newline3"#,
-            global.get_property("header_keys")?.as_str()?
+            ctx.global.get_property("header_keys")?.as_str()?
         );
 
         Ok(())
@@ -429,7 +408,6 @@ mod tests {
     #[test]
     fn test_headers_normalize_value() -> Result<()> {
         let mut ctx = Context::new();
-        let global = ctx.context.global_object()?;
 
         ctx.eval(
             r#"
@@ -449,7 +427,7 @@ mod tests {
 
         assert_eq!(
             "null:type(string),undefined:type(string),12345:type(string),a,b,c:type(string),[object Object]:type(string)",
-            global.get_property("header_values")?.as_str()?
+            ctx.global.get_property("header_values")?.as_str()?
         );
 
         Ok(())

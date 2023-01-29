@@ -27,7 +27,7 @@ release: esbuild
 
 # Run the examples
 example:
-	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml --release
+	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml
 
 # Install wasi-sdk
 install_wasi_sdk:
@@ -43,7 +43,7 @@ improve:
 
 test-engine:
 	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
-	cargo wasi test --package js-wasm-workers-engine -- --nocapture 
+	cargo wasi test --package js-wasm-workers-engine -- --nocapture
 
 # catch anything and do nothing
 %:

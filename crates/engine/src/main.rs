@@ -17,6 +17,7 @@ mod request;
 mod tests;
 
 use fetch::fetch::fetch;
+use globals::{console::set_global_console, utils::set_global_utils};
 
 static WEB_PLATFORM_APIS: &str = include_str!("../dist/web-platform-apis.js");
 
@@ -27,8 +28,9 @@ static RESPONSE: Lazy<Mutex<Option<Result<SendWrapper<Value>>>>> = Lazy::new(|| 
 fn main() -> Result<()> {
     let context = Context::default();
 
-    globals::globals(&context, stderr(), stderr())?;
     fetch(&context)?;
+    set_global_utils(&context)?;
+    set_global_console(&context, stderr(), stderr())?;
 
     let mut contents = String::new();
     let mut source = String::new();

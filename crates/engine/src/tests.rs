@@ -1,3 +1,3 @@
+mod console;
 mod fetch;
-mod globals;
-mod utils;
+mod test_utils;

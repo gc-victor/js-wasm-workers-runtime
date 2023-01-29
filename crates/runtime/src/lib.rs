@@ -53,11 +53,6 @@ pub async fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
         .call_async(&mut store, ())
         .await?;
 
-    // linker
-    //     .get_default(&mut store, "")?
-    //     .typed::<(), ()>(&store)?
-    //     .call(&mut store, ())?;
-
     let mut buffer = Vec::new();
 
     stdout_mutex
