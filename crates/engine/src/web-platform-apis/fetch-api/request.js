@@ -6,7 +6,6 @@ import { arrayBuffer, blob, formData, json, text } from "./utils.js";
  * The Request interface of the Fetch API represents a resource request.
  *
  * @see: https://developer.mozilla.org/en-US/docs/Web/API/Request
- * @see: https://developers.cloudflare.com/workers/runtime-apis/request/
  * @see: https://fetch.spec.whatwg.org/#request-class
  * @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L339
  */

@@ -24,5 +24,3 @@
 
     Reflect.deleteProperty(globalThis, "___encodeStringToUtf8Buffer");
 })();
-
-globalThis.TextEncoder = TextEncoder;

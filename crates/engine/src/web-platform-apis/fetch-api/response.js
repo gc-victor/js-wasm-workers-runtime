@@ -2,30 +2,34 @@ import {
     arrayBuffer,
     blob,
     formData,
-    hasNullBody,
     json,
     statusTextList,
     text,
 } from "./utils.js";
 
-// TODO: add documentation
-// @see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+// @see: https://developer.mozilla.org/en-US/docs/Web/API/Response
+// @see: https://fetch.spec.whatwg.org/#response-class
+// @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L448
 class Response {
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
     constructor(body, options = {}) {
-        this.textEncoder = new TextEncoder();
-        
-        this.body = hasNullBody(options.status) ? null : body;
+        const textEncoder = new TextEncoder();
+        const headers = new Headers(options.headers || {});
+        const status = options.status || 200;
+
+        // https://fetch.spec.whatwg.org/#null-body-status
+        this.body = [101, 103, 204, 205, 304].includes(options.status)
+            ? null
+            : body;
         this.body =
             typeof this.body === "string"
-                ? this.textEncoder.encode(this.body).buffer
+                ? textEncoder.encode(this.body).buffer
                 : this.body;
         this.bodyUsed = false;
-        this.status = options.status || 200;
-        this.statusText = options.statusText || statusTextList[this.status];
-        this.ok = this.status >= 200 && this.status < 300;
-
-        const headers = new Headers(options.headers || {});
         this.headers = headers.getAll();
+        this.ok = status >= 200 && status < 300;
+        this.status = status;
+        this.statusText = options.statusText || statusTextList[this.status];
 
         if (body instanceof URLSearchParams) {
             this.headers.set(
@@ -35,10 +39,9 @@ class Response {
         }
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/redirect
     static redirect(url, statusCode = 307) {
-        const redirectStatuses = [301, 302, 303, 307, 308];
-
-        if (redirectStatuses.indexOf(statusCode) === -1) {
+        if ([301, 302, 303, 307, 308].indexOf(statusCode) === -1) {
             throw new TypeError("The status code must be between 301 and 308.");
         }
 
@@ -51,6 +54,7 @@ class Response {
         });
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/clone
     clone() {
         const headers = new Headers(this.headers);
 
@@ -62,28 +66,34 @@ class Response {
         });
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/error
     error() {
         const response = new Response(null, { status: 0, statusText: "" });
         response.type = "error";
         return response;
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/arrayBuffer
     async arrayBuffer() {
         return await arrayBuffer(this);
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/blob
     async blob() {
         return await blob(this);
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/formData
     async formData() {
         return await formData(this);
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/json
     async json() {
         return await json(this);
     }
 
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/text
     async text() {
         return await text(this);
     }
