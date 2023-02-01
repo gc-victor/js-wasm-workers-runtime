@@ -1,5 +1,5 @@
 // @see: https://developer.mozilla.org/en-US/docs/Web/API/TextEncoder
-// @see: https://github.com/Shopify//blob/066dbb00c88413bf64ef5f73c6d81cc2c6b168c6/crates/core/prelude/text-encoding.js
+// @see: https://github.com/Shopify/javy/blob/ecbe8cdf302acbff28287370960a0c3e7481a505/crates/core/prelude/text-encoding.js
 (function () {
     const ___encodeStringToUtf8Buffer = globalThis.___encodeStringToUtf8Buffer;
 

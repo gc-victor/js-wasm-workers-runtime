@@ -26,6 +26,7 @@ mod tests {
             ctx.global.get_property("response_default")?.as_str()?
         );
 
+        // With body as string
         ctx.eval(
             r#"
             var textDecoder = new TextDecoder();

@@ -1040,6 +1040,7 @@ dependencies = [
  "http",
  "once_cell",
  "quickjs-wasm-rs",
+ "regex",
  "send_wrapper",
  "serde",
  "serde_bytes",

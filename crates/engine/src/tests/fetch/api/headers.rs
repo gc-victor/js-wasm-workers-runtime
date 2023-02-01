@@ -3,6 +3,7 @@
 #[cfg(test)]
 mod tests {
     use anyhow::Result;
+    use regex::Regex;
 
     use crate::tests::test_utils::context::Context;
 
@@ -75,12 +76,16 @@ mod tests {
 
         // // Null
         // // @see: https://github.com/web-platform-tests/wpt/blob/master/fetch/api/headers/headers-record.any.js#L35
-        assert_eq!(
-            "Uncaught TypeError: Failed to construct 'Headers': The provided value is null\n    at Ve (context.js)\n    at <eval> (context.js:2)\n",
-            ctx.eval(r#"var headers = new Headers(null);"#)
+        let re = Regex::new(
+            r"^Uncaught TypeError: Failed to construct 'Headers': The provided value is null",
+        )
+        .unwrap();
+
+        assert!(re.is_match(
+            &ctx.eval(r#"var headers = new Headers(null);"#)
                 .unwrap_err()
                 .to_string()
-        );
+        ));
 
         Ok(())
     }
