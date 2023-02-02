@@ -19,16 +19,24 @@ class Response {
 
         if (body) {
             const types = {
-                "[object Blob]": () => body.type,
-                "[object FormData]": () => "multipart/form-data",
-                "[object URLSearchParams]": () =>
-                    "application/x-www-form-urlencoded;charset=UTF-8",
+                "[object Object]": () => {
+                    if (body instanceof Blob) {
+                        return body.type;
+                    } else if (body instanceof FormData) {
+                        return "multipart/form-data";
+                    } else if (body instanceof URLSearchParams) {
+                        return "application/x-www-form-urlencoded;charset=UTF-8";
+                    } else {
+                        return null;
+                    }
+                },
+                "[object String]": () => "text/plain;charset=UTF-8",
                 "[object Undefined]": () => null,
                 "[object Null]": () => null,
             };
             const type = types[Object.prototype.toString.call(body)];
-        
-            headers.set("content-type", type ? type() : "text/plain;charset=UTF-8");
+
+            headers.set("content-type", type ? type() : null);
         }
 
         // https://fetch.spec.whatwg.org/#null-body-status
@@ -40,7 +48,7 @@ class Response {
                 ? textEncoder.encode(this.body).buffer
                 : this.body;
         this.bodyUsed = false;
-        this.headers = headers.getAll();
+        this.headers = headers;
         this.ok = status >= 200 && status < 300;
         this.status = status;
         this.statusText = options.statusText || statusTextList[this.status];

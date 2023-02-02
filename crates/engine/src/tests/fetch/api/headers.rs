@@ -20,7 +20,7 @@ mod tests {
             "#,
         )?;
 
-        assert_eq!("{}", ctx.global.get_property("header_value")?.as_str()?);
+        assert_eq!("[]", ctx.global.get_property("header_value")?.as_str()?);
 
         // Undefined
         ctx.eval(
@@ -30,7 +30,7 @@ mod tests {
             "#,
         )?;
 
-        assert_eq!("{}", ctx.global.get_property("header_value")?.as_str()?);
+        assert_eq!("[]", ctx.global.get_property("header_value")?.as_str()?);
 
         // Object
         ctx.eval(
@@ -41,7 +41,7 @@ mod tests {
         )?;
 
         assert_eq!(
-            r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
+            r#"[["content-type","application/json"],["authorization","Bearer 12345"]]"#,
             ctx.global.get_property("header_value")?.as_str()?
         );
 
@@ -54,7 +54,7 @@ mod tests {
         )?;
 
         assert_eq!(
-            r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
+            r#"[["content-type","application/json"],["authorization","Bearer 12345"]]"#,
             ctx.global.get_property("header_value")?.as_str()?
         );
 
@@ -70,7 +70,7 @@ mod tests {
         )?;
 
         assert_eq!(
-            r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
+            r#"[["content-type","application/json"],["authorization","Bearer 12345"]]"#,
             ctx.global.get_property("header_value")?.as_str()?
         );
 
@@ -186,7 +186,7 @@ mod tests {
         )?;
 
         assert_eq!(
-            r#"{"content-type":"application/json","authorization":"Bearer 12345"}"#,
+            r#"[["content-type","application/json"],["authorization","Bearer 12345"]]"#,
             ctx.global.get_property("header_value")?.as_str()?
         );
 
@@ -360,7 +360,7 @@ mod tests {
 
             for (let pair of headers.entries()) {
                 header_entries.push(pair[0] + ": " + pair[1]);
-             }
+            }
             "#,
         )?;
 
