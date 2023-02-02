@@ -1,6 +1,6 @@
 // @see: https://developer.mozilla.org/en-US/docs/Web/API/Blob
 // @see: https://fetch.spec.whatwg.org/#response-class
-// @see: https://github.com/web-platform-tests/wpt/tree/master/fetch/api/response
+// @see: https://github.com/web-platform-tests/wpt/blob/3ccab5e25f082e8d055aef70b692a98786b9a9f2/FileAPI/blob/
 // @see: https://github.com/node-fetch/fetch-blob/blob/57e4daef36081936581d14509b6cc618d87ab9e2/test/test-wpt-in-node.js
 #[cfg(test)]
 mod tests {
