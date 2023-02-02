@@ -37,7 +37,7 @@ mod tests {
         )?;
 
         assert_eq!(
-            json!({"body":{},"bodyUsed":false,"status":200,"statusText":"OK","ok":true,"headers":{}})
+            json!({"body":{},"bodyUsed":false,"status":200,"statusText":"OK","ok":true,"headers":{"content-type": "text/plain;charset=UTF-8"}})
                 .to_string(),
             ctx.global.get_property("response_default")?.as_str()?
         );
@@ -45,6 +45,22 @@ mod tests {
         assert_eq!(
             "Hello World!",
             ctx.global.get_property("response_body")?.as_str()?
+        );
+
+        // With body as blob
+        ctx.eval(
+            r#"
+            var blob = new Blob();
+            var options = { status: 200, statusText: 'SuperSmashingGreat!' };
+            var response = new Response(blob, options);
+            var response_default = JSON.stringify(response);
+            "#,
+        )?;
+
+        assert_eq!(
+            json!({"body":{"size": 0, "type": ""},"bodyUsed":false,"status":200,"statusText":"SuperSmashingGreat!","ok":true,"headers":{"content-type": "text/plain;charset=UTF-8"}})
+                .to_string(),
+            ctx.global.get_property("response_default")?.as_str()?
         );
 
         Ok(())

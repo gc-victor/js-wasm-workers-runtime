@@ -1,4 +1,4 @@
-import { arrayBuffer, blob, formData, json, text } from "./utils.js";
+import { arrayBuffer, blob, formData, json, text } from "./request-response-methods.js";
 
 /*
  * Request

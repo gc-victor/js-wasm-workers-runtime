@@ -5,7 +5,7 @@ import {
     json,
     statusTextList,
     text,
-} from "./utils.js";
+} from "./request-response-methods.js";
 
 // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response
 // @see: https://fetch.spec.whatwg.org/#response-class
@@ -16,6 +16,20 @@ class Response {
         const textEncoder = new TextEncoder();
         const headers = new Headers(options.headers || {});
         const status = options.status || 200;
+
+        if (body) {
+            const types = {
+                "[object Blob]": () => body.type,
+                "[object FormData]": () => "multipart/form-data",
+                "[object URLSearchParams]": () =>
+                    "application/x-www-form-urlencoded;charset=UTF-8",
+                "[object Undefined]": () => null,
+                "[object Null]": () => null,
+            };
+            const type = types[Object.prototype.toString.call(body)];
+        
+            headers.set("content-type", type ? type() : "text/plain;charset=UTF-8");
+        }
 
         // https://fetch.spec.whatwg.org/#null-body-status
         this.body = [101, 103, 204, 205, 304].includes(options.status)
@@ -30,13 +44,6 @@ class Response {
         this.ok = status >= 200 && status < 300;
         this.status = status;
         this.statusText = options.statusText || statusTextList[this.status];
-
-        if (body instanceof URLSearchParams) {
-            this.headers.set(
-                "content-type",
-                "application/x-www-form-urlencoded;charset=UTF-8",
-            );
-        }
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/redirect

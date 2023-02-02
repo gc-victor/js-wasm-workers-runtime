@@ -45,6 +45,10 @@ test-engine:
 	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
 	cargo wasi test --package js-wasm-workers-engine -- --nocapture
 
+rome-check:
+	crates/engine/node_modules/.bin/rome check crates/engine/web-platform-apis --apply
+
+
 # catch anything and do nothing
 %:
 	@:
