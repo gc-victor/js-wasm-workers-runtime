@@ -4,6 +4,7 @@ import "./core/blob.js";
 import "./core/form-data.js";
 import "./core/text-encoder.js";
 import "./core/text-decoder.js";
+import "./core/url";
 import "./core/url-search-params";
 
 import "./fetch-api/abortcontroller.js";

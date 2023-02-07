@@ -1,11 +1,14 @@
+use std::{borrow::Cow, str};
+
 use anyhow::{anyhow, Result};
 use quickjs_wasm_rs::{Context, JSError, Value};
-use std::{borrow::Cow, str};
+use url::Url;
 
 pub(crate) fn set_global_utils(context: &Context) -> Result<()> {
     let global = context.global_object()?;
 
     global.set_property("___logger", context.wrap_callback(logger)?)?;
+    global.set_property("___parseUrl", context.wrap_callback(parse_url)?)?;
     global.set_property(
         "___decodeUtf8BufferToString",
         context.wrap_callback(decode_utf8_buffer_to_js_string())?,
@@ -32,6 +35,239 @@ fn logger(context: &Context, _this: &Value, args: &[Value]) -> Result<Value> {
     println!(")");
 
     context.undefined_value()
+}
+
+fn parse_url(context: &Context, _this: &Value, args: &[Value]) -> Result<Value> {
+    let url = args[0].as_str()?;
+    let base = args[1].as_str()?;
+
+    let options = Url::options();
+    let parse_base_url = Url::parse(base)?;
+
+    let list_url = options.base_url(Some(&parse_base_url)).parse(url)?;
+    let obj = context.object_value()?;
+    obj.set_property("href", context.value_from_str(list_url.as_str())?)?;
+    obj.set_property(
+        "origin",
+        context.value_from_str(list_url.origin().unicode_serialization().as_str())?,
+    )?;
+    obj.set_property("protocol", context.value_from_str(list_url.scheme())?)?;
+    obj.set_property(
+        "setProtocol",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let protocol = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_scheme(protocol).unwrap_or_else(|e| e);
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property(
+        "host",
+        context.value_from_str(list_url.host_str().unwrap_or(""))?,
+    )?;
+    obj.set_property(
+        "setHost",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let host = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_host(Some(host))?;
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property(
+        "hostname",
+        context.value_from_str(list_url.domain().unwrap_or(""))?,
+    )?;
+
+    let port = match list_url.port() {
+        Some(p) => p.to_string(),
+        None => String::new(),
+    };
+
+    obj.set_property("port", context.value_from_str(&port)?)?;
+    obj.set_property(
+        "setPort",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let port = args[1].as_str()?;
+
+                let mut url = Url::parse(href)?;
+
+                url.set_port(Some(port.parse()?)).unwrap_or_else(|e| e);
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property("pathname", context.value_from_str(list_url.path())?)?;
+    obj.set_property(
+        "setPathname",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let path = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_path(path);
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property(
+        "search",
+        context.value_from_str(list_url.query().unwrap_or(""))?,
+    )?;
+    obj.set_property(
+        "setSearch",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let query = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_query(Some(query));
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property(
+        "hash",
+        context.value_from_str(list_url.fragment().unwrap_or(""))?,
+    )?;
+    obj.set_property(
+        "setHash",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let hash = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_fragment(Some(hash));
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property("username", context.value_from_str(list_url.username())?)?;
+    obj.set_property(
+        "setUsername",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let username = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_username(username).unwrap_or_else(|e| e);
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+    obj.set_property(
+        "password",
+        context.value_from_str(list_url.password().unwrap_or(""))?,
+    )?;
+    obj.set_property(
+        "setPassword",
+        context.wrap_callback(
+            |ctx: &Context, _this: &Value, args: &[Value]| -> Result<Value> {
+                let href = args[0].as_str()?;
+                let password = args[1].as_str()?;
+                let mut url = Url::parse(href)?;
+
+                url.set_password(Some(password)).unwrap_or_else(|e| e);
+
+                let obj = parse_url(
+                    ctx,
+                    _this,
+                    &[
+                        ctx.value_from_str(url.as_str())?,
+                        ctx.value_from_str("about:blank")?,
+                    ],
+                );
+
+                obj
+            },
+        )?,
+    )?;
+
+    Ok(obj)
 }
 
 fn decode_utf8_buffer_to_js_string(

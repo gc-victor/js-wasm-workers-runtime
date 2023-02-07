@@ -1,3 +1,5 @@
+const entries = Symbol("entries");
+
 /**
  * URLSearchParams
  *
@@ -5,125 +7,212 @@
  *
  * @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams
  * @see: https://url.spec.whatwg.org/#interface-urlsearchparams
+ * @see: https://github.com/ungap/url-search-params
  */
 class URLSearchParams {
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/URLSearchParams
     constructor(init) {
-        this.params = new Map();
-        if (init) {
-            if (typeof init === "string") {
-                init.replace("?", "")
-                    .split("&")
-                    .forEach((entry) => {
-                        const [key, value] = entry.split("=");
-                        this.addValue(key, decodeURIComponent(value));
-                    });
-            } else if (typeof init === "object") {
-                if (Array.isArray(init)) {
-                    init.forEach(([key, value]) => {
-                        this.addValue(key, value);
-                    });
-                } else {
-                    Object.entries(init).forEach(([key, value]) => {
-                        this.addValue(key, value);
-                    });
+        this[entries] = {};
+
+        if (!init) {
+            return;
+        }
+
+        if (typeof init === "string") {
+            let index;
+            let value;
+            let i = 0;
+
+            const pairs = init.split("&");
+            const length = pairs.length;
+
+            if (init.charAt(0) === "?") {
+                init = init.slice(1);
+            }
+
+            for (i; i < length; i++) {
+                value = pairs[i];
+                index = value.indexOf("=");
+                if (-1 < index) {
+                    appendTo(
+                        this[entries],
+                        decode(value.slice(0, index)),
+                        decode(value.slice(index + 1)),
+                    );
+                } else if (value.length) {
+                    appendTo(this[entries], decode(value), "");
                 }
             }
-        }
-    }
+        } else if (Array.isArray(init)) {
+            let value;
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/addValue
-    addValue(name, value) {
-        const values = this.params.get(name);
-        if (values) {
-            values.push(value);
+            for (i; i < length; i++) {
+                value = init[i];
+                appendTo(this[entries], value[0], value[1]);
+            }
+        } else if ("forEach" in init) {
+            init.forEach(addEach, dict);
         } else {
-            this.params.set(name, [value]);
+            for (let key in init) appendTo(this[entries], key, init[key]);
         }
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/append
     append(name, value) {
-        this.addValue(name, value);
+        appendTo(this[entries], name, value);
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/delete
     delete(name) {
-        this.params.delete(name);
+        this[entries][name] = null;
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/entries
-    *entries() {
-        for (const [key, values] of this.params) {
-            for (const value of values) {
-                yield [key, value];
-            }
-        }
+    entries() {
+        return iterator(this, function (value, key) {
+            this.push([key, value]);
+        });
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/forEach
-    forEach(callbackfn, thisArg) {
-        this.params.forEach((values, key) => {
-            values.forEach((value) => {
-                callbackfn.call(thisArg, value, key, this);
+    forEach(callback, thisArg) {
+        var self = this;
+        var names = Object.create(null);
+        this.toString()
+            .replace(/=[\s\S]*?(?:&|$)/g, "=")
+            .split("=")
+            .forEach(function (name) {
+                if (!name.length || name in names) return;
+                (names[name] = self.getAll(name)).forEach(function (value) {
+                    callback.call(thisArg, value, name, self);
+                });
             });
-        });
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/get
     get(name) {
-        var _a;
-        return (
-            ((_a = this.params.get(name)) === null || _a === void 0
-                ? void 0
-                : _a[0]) || null
-        );
+        return this.getAll(name)[0] || null;
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/getAll
     getAll(name) {
-        return this.params.get(name) || [];
+        return this[entries][name] || [];
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/has
     has(name) {
-        return this.params.has(name);
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/keys
-    keys() {
-        return this.params.keys();
+        return !!this.getAll(name).length;
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/set
     set(name, value) {
-        this.params.set(name, [value]);
+        this[entries][name] = [value];
+    }
+
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/keys
+    keys() {
+        return iterator(this, function (_, name) {
+            this.push(name);
+        });
+    }
+
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/values
+    values() {
+        return iterator(this, function (value) {
+            this.push(value);
+        });
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/sort
     sort() {
-        this.params = new Map([...this.params].sort());
+        const values = Object.create(null);
+        const entries = this.entries();
+        const names = [];
+
+        let i;
+        let entry = entries.next();
+        let done = entry.done;
+        let name;
+        let value;
+
+        while (!done) {
+            value = entry.value;
+            name = value[0];
+            names.push(name);
+            if (!(name in values)) {
+                values[name] = [];
+            }
+            values[name].push(value[1]);
+            entry = entries.next();
+            done = entry.done;
+        }
+
+        names.sort();
+
+        for (i = 0; i < names.length; i++) {
+            this.delete(names[i]);
+        }
+
+        for (i = 0; i < names.length; i++) {
+            name = names[i];
+            this.append(name, values[name].shift());
+        }
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/toString
     toString() {
-        return Array.from(this.params.entries())
-            .map(([key, value]) => `${key}=${value}`)
-            .join("&");
-    }
+        const query = [];
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/URLSearchParams/values
-    *values() {
-        for (const [, values] of this.params) {
-            for (const value of values) {
-                yield value;
+        for (let key in this[entries]) {
+            let encoded = encode(key);
+
+            for (let i = 0, value = this[entries][key]; i < value.length; i++) {
+                query.push(`${encoded}=${encode(value[i])}`);
             }
         }
-    }
 
-    [Symbol.iterator]() {
-        return this.entries();
+        return query.join("&");
     }
 }
 
 globalThis.URLSearchParams = URLSearchParams;
+
+function appendTo(entries, key, value) {
+    var res = Array.isArray(value) ? value.join(",") : value;
+    if (key in entries) entries[key].push(res);
+    else entries[key] = [res];
+}
+
+function decode(str) {
+    return decodeURIComponent(
+        str.replace(/%(?![0-9a-fA-F]{2})/g, "%25").replace(/\+/g, " "),
+    );
+}
+
+function encode(str) {
+    const find = /[!'\(\)~]|%20|%00/g;
+
+    return encodeURIComponent(str).replace(find, replacer);
+}
+
+function replacer(match) {
+    const replace = {
+        "!": "%21",
+        "'": "%27",
+        "(": "%28",
+        ")": "%29",
+        "~": "%7E",
+        "%20": "+",
+        "%00": "\x00",
+    };
+
+    return replace[match];
+}
+
+function iterator(self, callback) {
+    var items = [];
+
+    self.forEach(callback, items);
+
+    return items[Symbol.iterator]();
+}
