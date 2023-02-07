@@ -7,9 +7,15 @@ import {
     text,
 } from "./request-response-methods.js";
 
-// @see: https://developer.mozilla.org/en-US/docs/Web/API/Response
-// @see: https://fetch.spec.whatwg.org/#response-class
-// @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L448
+/**
+ * Response
+ *
+ * The Response interface of the Fetch API represents the response to a request.
+ * 
+ * @see: https://developer.mozilla.org/en-US/docs/Web/API/Response
+ * @see: https://fetch.spec.whatwg.org/#response-class
+ * @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L448
+ */
 class Response {
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
     constructor(body, options = {}) {

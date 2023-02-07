@@ -73,4 +73,35 @@ mod tests {
 
         Ok(())
     }
+
+    #[test]
+    fn test_parse_multipart() -> Result<()> {
+        let mut ctx = Context::new();
+
+        ctx.eval(
+            r#"
+            var body = `------cb6762ec1a35a74a
+            Content-Disposition: form-data; name="textFile[]"; filename="text.txt"
+            Content-Type: text/plain
+            
+            Plain Text
+            ------cb6762ec1a35a74a
+            Content-Disposition: form-data; name="textFile[]"; filename="text.txt"
+            Content-Type: text/plain
+            
+            Plain Text 1
+            ------cb6762ec1a35a74a--`;
+
+            var formData = ___parseMultipart(body, '------cb6762ec1a35a74a');
+            var textFile = formData.getAll('textFile');
+            "#,
+        )?;
+
+        assert_eq!(
+            "Plain Text,Plain Text 1",
+            ctx.global.get_property("textFile")?.as_str()?
+        );
+
+        Ok(())
+    }
 }

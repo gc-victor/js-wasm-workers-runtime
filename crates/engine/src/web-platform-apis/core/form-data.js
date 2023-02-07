@@ -1,9 +1,9 @@
-const ___data = Symbol();
+const ___formData = Symbol();
 
 // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 class FormData {
     constructor(form) {
-        this[___data] = [];
+        this[___formData] = [];
 
         if (form !== undefined) {
             throw new TypeError(
@@ -15,7 +15,7 @@ class FormData {
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/append
     append(key, value) {
         if (this.has(key)) {
-            this[___data] = this[___data].map((pair) => {
+            this[___formData] = this[___formData].map((pair) => {
                 if (pair[0] === key) {
                     const oldValue = pair[1];
                     const newValue = stringifyValue(value);
@@ -31,13 +31,13 @@ class FormData {
                 }
             });
         } else {
-            this[___data].push([key, stringifyValue(value)]);
+            this[___formData].push([key, stringifyValue(value)]);
         }
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/get
     get(key) {
-        const result = this[___data].find((pair) => pair[0] === key);
+        const result = this[___formData].find((pair) => pair[0] === key);
 
         if (result === undefined) {
             return null;
@@ -54,7 +54,7 @@ class FormData {
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/getAll
     getAll(key) {
-        const result = this[___data].find((pair) => pair[0] === key);
+        const result = this[___formData].find((pair) => pair[0] === key);
 
         if (result === undefined) {
             return [];
@@ -65,38 +65,38 @@ class FormData {
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/has
     has(key) {
-        return this[___data].some((pair) => pair[0] === key);
+        return this[___formData].some((pair) => pair[0] === key);
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/set
     set(key, value) {
         if (this.has(key)) {
-            this[___data] = this[___data].map((pair) =>
+            this[___formData] = this[___formData].map((pair) =>
                 pair[0] === key ? [key, stringifyValue(value)] : pair,
             );
         } else {
-            this[___data].push([key, stringifyValue(value)]);
+            this[___formData].push([key, stringifyValue(value)]);
         }
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/delete
     delete(key) {
-        this[___data] = this[___data].filter((pair) => pair[0] !== key);
+        this[___formData] = this[___formData].filter((pair) => pair[0] !== key);
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/forEach
     entries() {
-        return this[___data][Symbol.iterator]();
+        return this[___formData][Symbol.iterator]();
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/forEach
     keys() {
-        return this[___data].map((pair) => pair[0])[Symbol.iterator]();
+        return this[___formData].map((pair) => pair[0])[Symbol.iterator]();
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/FormData/forEach
     values() {
-        return this[___data].map((pair) => pair[1])[Symbol.iterator]();
+        return this[___formData].map((pair) => pair[1])[Symbol.iterator]();
     }
 }
 

@@ -8,7 +8,7 @@ export async function blob(self) {
 }
 
 export async function formData(self) {
-    return self.text().then((text) => parseMultipart(self.headers, text));
+    return self.text().then((text) => toFormData(self.headers, text));
 }
 
 export async function json(self) {
@@ -39,6 +39,84 @@ export async function text(self) {
 
         resolve(textDecoder.decode(self.body));
     });
+}
+
+function toFormData(headers, body) {
+    const formData = new FormData();
+
+    if (!body) formData;
+
+    const contentType = headers.get("content-type");
+
+    if (/multipart\/form-data/.test(contentType)) {
+        const boundary = getBoundary(contentType);
+        return boundary ? parseMultipart(body, boundary) : formData;
+    } else if (contentType === "application/x-www-form-urlencoded") {
+        body.trim()
+            .split("&")
+            .forEach(function (bytes) {
+                if (bytes) {
+                    let split = bytes.split("=");
+                    let name = split.shift().replace(/\+/g, " ");
+                    let value = split.join("=").replace(/\+/g, " ");
+                    formData.append(
+                        decodeURIComponent(name),
+                        decodeURIComponent(value),
+                    );
+                }
+            });
+
+        return formData;
+    } else {
+        throw new TypeError("Invalid content-type");
+    }
+}
+
+// @see: https://github.com/theastroscout/multipart-parser/blob/main/src/mp.mjs
+// @see: https://github.com/jo/multipart-related/blob/main/src/multipart-related-parser.js
+// @see: https://github.com/AMVijay/multipart-parser/blob/main/src/multipart-parser.ts
+// @see: https://github.com/nachomazzara/parse-multipart-data/blob/master/src/multipart.ts
+function parseMultipart(body, boundary) {
+    let name = "";
+    
+    const formData = new FormData();
+    const chunks = body.split(boundary);
+
+    for (let i = 0, len = chunks.length; i < len; i++) {
+        const chunk = chunks[i];
+        const lines = chunk.split(/\r?\n/);
+
+        for (let l = 1, lenL = lines.length; l < lenL; l++) {
+            const line = lines[l].trim();
+            
+            if (!line) continue;
+            if (/content-type/i.test(line)) continue;
+            if (/content-disposition/i.test(line)) {
+                name = line.match(/\sname\=\"(.*?)\"/);
+                name = name ? name[1] : "";
+                name = name.replace("[]", "");
+
+                continue;
+            }
+
+            formData.append(name, line);
+        }
+    }
+
+    return formData;
+}
+
+// TODO: remove
+globalThis.___parseMultipart = parseMultipart;
+
+function getBoundary(contentType) {
+    if (!contentType) return "";
+
+    const boundary = contentType
+        .split(";")
+        .find((item) => item.includes("boundary"));
+
+    return boundary ? boundary.split("=")[1] : "";
 }
 
 // @see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
