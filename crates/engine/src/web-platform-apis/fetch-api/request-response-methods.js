@@ -1,43 +1,35 @@
-export async function arrayBuffer(self) {
-    return new Promise((resolve) => resolve(self.body));
+export async function arrayBuffer(self, symbol) {
+    return new Promise((resolve) => resolve(self[symbol].body));
 }
 
-export async function blob(self) {
-    const type = self.headers.get("content-type") || undefined;
+export async function blob(self, symbol) {
+    const type = self[symbol].headers.get("content-type") || undefined;
     return self.arrayBuffer().then((buffer) => new Blob([buffer], { type }));
 }
 
-export async function formData(self) {
-    return self.text().then((text) => toFormData(self.headers, text));
+export async function formData(self, symbol) {
+    return self.text().then((text) => toFormData(self[symbol].headers, text));
 }
 
 export async function json(self) {
     return self.text().then((text) => JSON.parse(text));
 }
 
-export async function text(self) {
-    if (self.bodyUsed) {
+export async function text(self, symbol) {
+    if (self[symbol].bodyUsed) {
         throw new TypeError("Body is already used");
     }
 
-    self.bodyUsed = true;
+    self[symbol].bodyUsed = true;
 
-    if (!self.body) {
+    if (!self[symbol].body) {
         return "";
-    }
-
-    if (typeof self.body === "string") {
-        return self.body;
-    }
-
-    if (!(self.body instanceof ArrayBuffer)) {
-        return JSON.stringify(self.body);
     }
 
     return new Promise((resolve) => {
         const textDecoder = new TextDecoder();
 
-        resolve(textDecoder.decode(self.body));
+        resolve(textDecoder.decode(self[symbol].body));
     });
 }
 
@@ -105,9 +97,6 @@ function parseMultipart(body, boundary) {
 
     return formData;
 }
-
-// TODO: remove
-globalThis.___parseMultipart = parseMultipart;
 
 function getBoundary(contentType) {
     if (!contentType) return "";
