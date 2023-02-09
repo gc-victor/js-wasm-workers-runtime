@@ -73,7 +73,10 @@ class Headers {
     }
 
     getAll() {
-        return this[___headers];
+        return this[___headers].reduce((acc, header) => {
+            acc[header[0]] = header[1];
+            return acc;
+        }, {});
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/get
