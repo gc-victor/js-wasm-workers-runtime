@@ -1,5 +1,12 @@
 export async function arrayBuffer(self, symbol) {
-    return new Promise((resolve) => resolve(self[symbol].body));
+    let body = self[symbol].body;
+    
+    if (body instanceof ReadableStream) {
+        const read = await body.getReader().read();
+
+        body = read.value;
+    }
+    return new Promise((resolve) => resolve(body));
 }
 
 export async function blob(self, symbol) {
@@ -26,10 +33,18 @@ export async function text(self, symbol) {
         return "";
     }
 
+    let body = self[symbol].body;
+
+    if (body instanceof ReadableStream) {
+        const read = await body.getReader().read();
+
+        body = read.value;
+    }
+
     return new Promise((resolve) => {
         const textDecoder = new TextDecoder();
 
-        resolve(textDecoder.decode(self[symbol].body));
+        resolve(textDecoder.decode(body));
     });
 }
 
@@ -64,13 +79,9 @@ function toFormData(headers, body) {
     }
 }
 
-// @see: https://github.com/theastroscout/multipart-parser/blob/main/src/mp.mjs
-// @see: https://github.com/jo/multipart-related/blob/main/src/multipart-related-parser.js
-// @see: https://github.com/AMVijay/multipart-parser/blob/main/src/multipart-parser.ts
-// @see: https://github.com/nachomazzara/parse-multipart-data/blob/master/src/multipart.ts
 function parseMultipart(body, boundary) {
     let name = "";
-    
+
     const formData = new FormData();
     const chunks = body.split(boundary);
 
@@ -80,7 +91,7 @@ function parseMultipart(body, boundary) {
 
         for (let l = 1, lenL = lines.length; l < lenL; l++) {
             const line = lines[l].trim();
-            
+
             if (!line) continue;
             if (/content-type/i.test(line)) continue;
             if (/content-disposition/i.test(line)) {

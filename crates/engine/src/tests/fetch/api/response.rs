@@ -227,6 +227,31 @@ mod tests {
     }
 
     #[test]
+    fn test_response_body_readable_stream() -> Result<()> {
+        let mut ctx = Context::new();
+
+        ctx.eval(
+            r#"
+            async function handler() {
+                const textDecoder = new TextDecoder();
+
+                const response = new Response("Hello World!");
+
+                const response_body_readable = response.body;
+                const response_body_readable_read = await response_body_readable.getReader().read();
+                const response_body_readable_read_value = textDecoder.decode(response_body_readable_read.value);
+
+                return response_body_readable_read_value;
+            }
+            "#,
+        )?;
+
+        assert_eq!(r#""Hello World!""#.to_string(), ctx.get_handler_value()?);
+
+        Ok(())
+    }
+
+    #[test]
     fn test_response_error() -> Result<()> {
         let mut ctx = Context::new();
 
@@ -362,8 +387,8 @@ mod tests {
         ctx.eval(
             r#"
             async function handler() {
-                var response = new Response(new ArrayBuffer(8));
-                var response_body = await response.arrayBuffer();
+                const response = new Response(new ArrayBuffer(8));
+                const response_body = await response.arrayBuffer();
 
                 return response_body;
             }
@@ -382,8 +407,8 @@ mod tests {
         ctx.eval(
             r#"
             async function handler() {
-                var response = new Response(new Blob(["Hello World!"], {type: "text/plain"}));
-                var response_body = await response.blob();
+                const response = new Response(new Blob(["Hello World!"], {type: "text/plain"}));
+                const response_body = await response.blob();
 
                 return {size: response_body.size, type: response_body.type};
             }
@@ -440,8 +465,8 @@ mod tests {
         ctx.eval(
             r#"
             async function handler() {
-                var response = new Response("Hello World!");
-                var response_body = await response.text();
+                const response = new Response("Hello World!");
+                const response_body = await response.text();
 
                 return response_body;
             }
@@ -460,7 +485,7 @@ mod tests {
         ctx.eval(
             r#"
             async function handler() {
-                var body = `------cb6762ec1a35a74a
+                const body = `------cb6762ec1a35a74a
                     Content-Disposition: form-data; name="textFile[]"; filename="text.txt"
                     Content-Type: text/plain
                     
@@ -471,12 +496,12 @@ mod tests {
                     
                     Plain Text 1
                     ------cb6762ec1a35a74a--`;
-                var response = new Response(body, {
+                const response = new Response(body, {
                     headers: {
                         'Content-Type': 'multipart/form-data; boundary=------cb6762ec1a35a74a'
                     }
                 });
-                var formData = await response.formData();
+                const formData = await response.formData();
 
                 return formData.getAll('textFile');
             }
@@ -491,7 +516,7 @@ mod tests {
         ctx.eval(
             r#"
             async function handler() {
-                var body = `------abcd
+                const body = `------abcd
                     Content-Disposition: form-data; name="textFile1"; filename="text.txt"
                     Content-Type: text/plain
                     
@@ -502,14 +527,14 @@ mod tests {
                     
                     Plain Text 2
                     ------abcd--`;
-                var response = new Response(body, {
+                const response = new Response(body, {
                     headers: {
                         'Content-Type': 'multipart/form-data; boundary=------abcd'
                     }
                 });
-                var formData = await response.formData();
-                var textFile1 = formData.get('textFile1');
-                var textFile2 = formData.get('textFile2');
+                const formData = await response.formData();
+                const textFile1 = formData.get('textFile1');
+                const textFile2 = formData.get('textFile2');
 
                 return {textFile1, textFile2};
             }

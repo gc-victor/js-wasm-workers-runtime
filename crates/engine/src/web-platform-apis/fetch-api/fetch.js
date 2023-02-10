@@ -1,3 +1,4 @@
+// @see: https://developer.mozilla.org/en-US/docs/Web/API/fetch
 function fetch(url, options) {
     const strResponse = ___fetcher({
         // rome-ignore lint/complexity/useOptionalChain: <explanation>

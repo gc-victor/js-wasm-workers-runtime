@@ -17,9 +17,7 @@ class Headers {
         this[___headers] = [];
 
         if (init instanceof Headers) {
-            init.forEach(function (value, name) {
-                this.append(name, value);
-            }, this);
+            init.forEach((value, name) => this.append(name, value));
         } else if (Array.isArray(init)) {
             init.forEach(function (header) {
                 if (header.length !== 2) {
@@ -105,9 +103,9 @@ class Headers {
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Headers/forEach
-    forEach(callback, thisArg) {
-        for (let pair of headers.entries()) {
-            callback.call(thisArg, pair[1], pair[0], this);
+    forEach(callback, thisArg = this) {
+        for (let pair of thisArg.entries()) {
+            callback.call(thisArg, pair[1], pair[0]);
         }
     }
 
