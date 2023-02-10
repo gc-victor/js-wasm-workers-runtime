@@ -21,7 +21,6 @@ class URLSearchParams {
         if (typeof init === "string") {
             let index;
             let value;
-            let i = 0;
 
             const pairs = init.split("&");
             const length = pairs.length;
@@ -30,7 +29,7 @@ class URLSearchParams {
                 init = init.slice(1);
             }
 
-            for (i; i < length; i++) {
+            for (let i = 0; i < length; i++) {
                 value = pairs[i];
                 index = value.indexOf("=");
                 if (-1 < index) {
@@ -46,12 +45,18 @@ class URLSearchParams {
         } else if (Array.isArray(init)) {
             let value;
 
-            for (i; i < length; i++) {
+            for (let i = 0; i < length; i++) {
                 value = init[i];
                 appendTo(this[entries], value[0], value[1]);
             }
-        } else if ("forEach" in init) {
-            init.forEach(addEach, dict);
+        } else if (init?.forEach) {
+            init.forEach(
+                (name, value) => appendTo(this[entries], name, value),
+                this,
+            );
+        } else if (init instanceof FormData) {
+            for (let [key, value] of init.entries())
+                appendTo(this[entries], key, value);
         } else {
             for (let key in init) appendTo(this[entries], key, init[key]);
         }
@@ -84,7 +89,7 @@ class URLSearchParams {
             .forEach(function (name) {
                 if (!name.length || name in names) return;
                 (names[name] = self.getAll(name)).forEach(function (value) {
-                    callback.call(thisArg, value, name, self);
+                    callback.call(thisArg, name, value, self);
                 });
             });
     }
@@ -178,6 +183,7 @@ class URLSearchParams {
 globalThis.URLSearchParams = URLSearchParams;
 
 function appendTo(entries, key, value) {
+    key = key.replace(/^\?/, "");
     var res = Array.isArray(value) ? value.join(",") : value;
     if (key in entries) entries[key].push(res);
     else entries[key] = [res];
