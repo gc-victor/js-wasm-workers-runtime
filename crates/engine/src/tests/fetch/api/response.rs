@@ -388,14 +388,66 @@ mod tests {
             r#"
             async function handler() {
                 const response = new Response(new ArrayBuffer(8));
-                const response_body = await response.arrayBuffer();
-
-                return response_body;
+                
+                return await response.arrayBuffer();
             }
             "#,
         )?;
 
         assert_eq!(r#"[0,0,0,0,0,0,0,0]"#, ctx.get_handler_value()?);
+
+        ctx.eval(
+            r#"
+            async function handler() {
+                const response = new Response(new Blob(["Hello World!"]));
+
+                return await response.arrayBuffer();
+            }
+            "#,
+        )?;
+
+        assert_eq!(
+            r#"[72,101,108,108,111,32,87,111,114,108,100,33]"#,
+            ctx.get_handler_value()?
+        );
+
+        ctx.eval(
+            r#"
+            async function handler() {
+                const formData = new FormData();
+
+                formData.append('textFile', 'Plain Text 1');
+                formData.append('textFile', 'Plain Text 2');
+
+                const response = new Response(formData);
+                const arrayBuffer = await response.arrayBuffer();
+
+                return new TextDecoder().decode(arrayBuffer)
+                    .replace(/------WebKitFormBoundary?([\d\w]+)/g, '------WebKitFormBoundary0');
+            }
+            "#,
+        )?;
+
+        assert_eq!(r#""------WebKitFormBoundary0\nContent-Disposition: form-data; name=\"textFile\"\n\nPlain Text 1,Plain Text 2\n------WebKitFormBoundary0--""#.to_string(), ctx.get_handler_value()?);
+
+        ctx.eval(
+            r#"
+            async function handler() {
+                const formData = new FormData();
+
+                formData.append('textFile1', 'Plain Text 1');
+                formData.append('textFile2', 'Plain Text 2');
+
+                const response = new Response(formData);
+                const arrayBuffer = await response.arrayBuffer();
+
+                return new TextDecoder().decode(arrayBuffer)
+                    .replace(/------WebKitFormBoundary?([\d\w]+)/g, '------WebKitFormBoundary0');
+            }
+            "#,
+        )?;
+
+        assert_eq!(r#""------WebKitFormBoundary0\nContent-Disposition: form-data; name=\"textFile1\"\n\nPlain Text 1\n------WebKitFormBoundary0\nContent-Disposition: form-data; name=\"textFile2\"\n\nPlain Text 2\n------WebKitFormBoundary0--""#.to_string(), ctx.get_handler_value()?);
 
         Ok(())
     }
@@ -475,6 +527,42 @@ mod tests {
 
         assert_eq!(r#""Hello World!""#, ctx.get_handler_value()?);
 
+        ctx.eval(
+            r#"
+            async function handler() {
+                const formData = new FormData();
+
+                formData.append('textFile', 'Plain Text 1');
+                formData.append('textFile', 'Plain Text 2');
+
+                const response = new Response(formData);
+                const text = await response.text();
+
+                return text.replace(/------WebKitFormBoundary?([\d\w]+)/g, '------WebKitFormBoundary0');
+            }
+            "#,
+        )?;
+
+        assert_eq!(r#""------WebKitFormBoundary0\nContent-Disposition: form-data; name=\"textFile\"\n\nPlain Text 1,Plain Text 2\n------WebKitFormBoundary0--""#.to_string(), ctx.get_handler_value()?);
+
+        ctx.eval(
+            r#"
+            async function handler() {
+                const formData = new FormData();
+
+                formData.append('textFile1', 'Plain Text 1');
+                formData.append('textFile2', 'Plain Text 2');
+
+                const response = new Response(formData);
+const text = await response.text();
+
+                return text.replace(/------WebKitFormBoundary?([\d\w]+)/g, '------WebKitFormBoundary0');
+            }
+            "#,
+        )?;
+
+        assert_eq!(r#""------WebKitFormBoundary0\nContent-Disposition: form-data; name=\"textFile1\"\n\nPlain Text 1\n------WebKitFormBoundary0\nContent-Disposition: form-data; name=\"textFile2\"\n\nPlain Text 2\n------WebKitFormBoundary0--""#.to_string(), ctx.get_handler_value()?);
+
         Ok(())
     }
 
@@ -545,6 +633,28 @@ mod tests {
             json!({"textFile1": "Plain Text 1", "textFile2": "Plain Text 2"}).to_string(),
             ctx.get_handler_value()?
         );
+
+        ctx.eval(
+            r#"
+            async function handler() {
+                const formData = new FormData();
+
+                formData.append('textFile', 'Plain Text 1');
+
+                const response = new Response(formData, {
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                });
+
+                const responseFormData = await response.formData();
+
+                return responseFormData.get('textFile');
+            }
+            "#,
+        )?;
+
+        assert_eq!(r#""Plain Text 1""#.to_string(), ctx.get_handler_value()?);
 
         Ok(())
     }

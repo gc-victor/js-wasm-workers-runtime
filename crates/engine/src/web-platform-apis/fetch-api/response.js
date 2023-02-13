@@ -1,11 +1,4 @@
-import {
-    arrayBuffer,
-    blob,
-    formData,
-    json,
-    statusTextList,
-    text,
-} from "./request-response-methods.js";
+import { ___RequestResponse, statusTextList } from "./request-response.js";
 
 const ___response = Symbol();
 
@@ -18,12 +11,13 @@ const ___response = Symbol();
  * @see: https://fetch.spec.whatwg.org/#response-class
  * @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L448
  */
-class Response {
+class Response extends ___RequestResponse {
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/Response
     constructor(body, init = {}) {
+        super(___response);
+
         this[___response] = {};
 
-        const textEncoder = new TextEncoder();
         const headers = new Headers(init.headers || {});
         const status = init.status !== undefined ? init.status : 200;
         const location = headers.get("location");
@@ -50,7 +44,9 @@ class Response {
         // https://fetch.spec.whatwg.org/#null-body-status
         body = [101, 103, 204, 205, 304].includes(init.status) ? null : body;
         body =
-            typeof body === "string" ? textEncoder.encode(body) : body || null;
+            typeof body === "string"
+                ? new TextEncoder().encode(body)
+                : body || null;
 
         this[___response].body = body;
         this[___response].bodyUsed = false;
@@ -92,21 +88,8 @@ class Response {
         });
     }
 
-    get body() {
-        if (this[___response].body === null) return null;
-        if (this[___response].body instanceof ReadableStream)
-            return this[___response].body;
-
-        const stream = new TransformStream();
-        const writer = stream.writable.getWriter();
-
-        writer.write(this[___response].body);
-        writer.close();
-
-        return stream.readable;
-    }
-    // read-only
-    set body(_) {}
+    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/body
+    // The getter body is on the parent class
 
     get bodyUsed() {
         return this[___response].bodyUsed;
@@ -156,16 +139,6 @@ class Response {
     // read-only
     set utl(_) {}
 
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/arrayBuffer
-    async arrayBuffer() {
-        return await arrayBuffer(this, ___response);
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/blob
-    async blob() {
-        return await blob(this, ___response);
-    }
-
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/clone
     clone() {
         if (this[___response].bodyUsed) {
@@ -183,19 +156,19 @@ class Response {
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/formData
-    async formData() {
-        return await formData(this, ___response);
-    }
+    // async formData() {
+    //     return await formData(this, ___response);
+    // }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/json
-    async json() {
-        return await json(this);
-    }
+    // async json() {
+    //     return await json(this);
+    // }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/text
-    async text() {
-        return await text(this, ___response);
-    }
+    // async text() {
+    //     return await text(this, ___response);
+    // }
 }
 
 globalThis.Response = Response;

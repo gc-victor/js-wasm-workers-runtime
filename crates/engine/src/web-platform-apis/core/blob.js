@@ -27,8 +27,6 @@ class Blob {
                 );
             }
 
-            const encoder = new TextEncoder();
-
             for (const element of blobParts) {
                 let part;
 
@@ -44,7 +42,7 @@ class Blob {
                 } else if (element instanceof Blob) {
                     part = element;
                 } else {
-                    part = encoder.encode(`${element}`);
+                    part = new TextEncoder().encode(`${element}`);
                 }
 
                 const size = ArrayBuffer.isView(part)
@@ -114,7 +112,6 @@ class Blob {
         const it = toIterator(this[___parts], true);
 
         return new ReadableStream({
-            // @ts-ignore
             type: "bytes",
             async pull(ctrl) {
                 const chunk = await it.next();

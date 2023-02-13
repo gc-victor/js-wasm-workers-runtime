@@ -1,10 +1,4 @@
-import {
-    arrayBuffer,
-    blob,
-    formData,
-    json,
-    text,
-} from "./request-response-methods.js";
+import { ___RequestResponse } from "./request-response.js";
 
 const ___request = Symbol();
 
@@ -17,9 +11,9 @@ const ___request = Symbol();
  * @see: https://fetch.spec.whatwg.org/#request-class
  * @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L339
  */
-class Request {
+class Request extends ___RequestResponse {
     constructor(input, init) {
-        const textEncoder = new TextEncoder();
+        super(___request);
 
         const self = (this[___request] = {});
         const isRequest = input instanceof Request;
@@ -37,7 +31,7 @@ class Request {
         }
 
         self.body =
-            typeof body === "string" ? textEncoder.encode(body) : body || null;
+            typeof body === "string" ? new TextEncoder().encode(body) : body || null;
 
         self.cache = options?.cache || "default";
         self.credentials = options?.credentials || "same-origin";
@@ -103,21 +97,7 @@ class Request {
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/body
-    get body() {
-        if (this[___request].body === null) return null;
-        if (this[___request].body instanceof ReadableStream)
-            return this[___request].body;
-
-        const stream = new TransformStream();
-        const writer = stream.writable.getWriter();
-
-        writer.write(this[___request].body);
-        writer.close();
-
-        return stream.readable;
-    }
-    // readonly
-    set body(_) {}
+    // The getter body is on the parent class
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/bodyUsed
     get bodyUsed() {
@@ -238,31 +218,6 @@ class Request {
             referrerPolicy: this[___request].referrerPolicy,
             signal: this[___request].signal,
         });
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/arrayBuffer
-    async arrayBuffer() {
-        return await arrayBuffer(this, ___request);
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/blob
-    async blob() {
-        return await blob(this, ___request);
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/formData
-    async formData() {
-        return await formData(this, ___request);
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/json
-    async json() {
-        return await json(this);
-    }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/text
-    async text() {
-        return await text(this, ___request);
     }
 }
 
