@@ -154,21 +154,6 @@ class Response extends ___RequestResponse {
             url: this[___response].url,
         });
     }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/formData
-    // async formData() {
-    //     return await formData(this, ___response);
-    // }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/json
-    // async json() {
-    //     return await json(this);
-    // }
-
-    // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/text
-    // async text() {
-    //     return await text(this, ___response);
-    // }
 }
 
 globalThis.Response = Response;

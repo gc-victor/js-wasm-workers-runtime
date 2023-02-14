@@ -1,4 +1,5 @@
 const ___state = Symbol();
+const ___update = Symbol();
 
 /**
  * URL
@@ -26,7 +27,7 @@ class URL {
 
         this[___state] = {};
 
-        update(this, properties);
+        this[___update](properties);
 
         this[___state].setHash = properties.setHash;
         this[___state].setHost = properties.setHost;
@@ -54,8 +55,7 @@ class URL {
     }
 
     set hash(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setHash(this[___state].href, String(value)),
         );
     }
@@ -69,7 +69,7 @@ class URL {
     set host(value) {
         value = String(value);
 
-        update(this, this[___state].setHost(this[___state].href, value));
+        this[___update](this[___state].setHost(this[___state].href, value));
 
         if (/:/.test(value)) {
             const parts = value.split(":");
@@ -83,8 +83,7 @@ class URL {
     }
 
     set hostname(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setHost(this[___state].href, String(value)),
         );
     }
@@ -95,7 +94,7 @@ class URL {
     }
 
     set href(value) {
-        update(this, ___parseUrl(String(value), "about:blank"));
+        this[___update](___parseUrl(String(value), "about:blank"));
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URL/origin
@@ -112,8 +111,7 @@ class URL {
     }
 
     set password(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setPassword(this[___state].href, String(value)),
         );
     }
@@ -124,8 +122,7 @@ class URL {
     }
 
     set pathname(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setPathname(this[___state].href, String(value)),
         );
     }
@@ -136,8 +133,7 @@ class URL {
     }
 
     set port(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setPort(this[___state].href, String(value)),
         );
     }
@@ -149,12 +145,12 @@ class URL {
     }
 
     set search(value) {
-        update(
-            this,
-            this[___state].setSearch(this[___state].href, String(value)),
+        const params = this[___state].setSearch(
+            this[___state].href,
+            String(value),
         );
 
-        this[___state].searchParams = new URLSearchParams(this[___state].search);
+        this[___update]({ ...params, href: params.href.replace(/\?$/, "") });
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URL/protocol
@@ -165,16 +161,61 @@ class URL {
 
     // @see: https://github.com/lifaon74/url-polyfill/blob/341221207263c9214e794fc3eaf221a71c596d29/do-not-use/url.js#L250
     set protocol(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setProtocol(this[___state].href, String(value)),
         );
     }
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/URL/searchParams
     get searchParams() {
-        // TODO: implement searchParams
-        return this[___state].searchParams;
+        const self = this;
+        const searchParams = self[___state].searchParams;
+
+        return {
+            append(name, value) {
+                searchParams.append(name, value);
+                self.search = searchParams.toString();
+            },
+            delete(name) {
+                searchParams.delete(name);
+                self.search = searchParams.toString();
+            },
+            entries() {
+                return searchParams.entries();
+            },
+            forEach() {
+                return searchParams.forEach();
+            },
+            get(name) {
+                return searchParams.get(name);
+            },
+            getAll(name) {
+                return searchParams.getAll(name);
+            },
+            has(name) {
+                return searchParams.has(name);
+            },
+            keys() {
+                return searchParams.keys();
+            },
+            set(name, value) {
+                searchParams.set(name, value);
+                self.search = searchParams.toString();
+            },
+            sort() {
+                searchParams.sort();
+                self.search = searchParams.toString();
+            },
+            toString() {
+                return searchParams.toString();
+            },
+            values() {
+                return searchParams.values();
+            },
+            [Symbol.iterator]() {
+                return searchParams.entries();
+            },
+        };
     }
 
     // It is read only
@@ -186,26 +227,25 @@ class URL {
     }
 
     set username(value) {
-        update(
-            this,
+        this[___update](
             this[___state].setUsername(this[___state].href, String(value)),
         );
+    }
+
+    [___update](properties) {
+        this[___state].hash = properties.hash;
+        this[___state].host = properties.host;
+        this[___state].hostname = properties.hostname;
+        this[___state].href = properties.href;
+        this[___state].origin = properties.origin;
+        this[___state].password = properties.password;
+        this[___state].pathname = properties.pathname;
+        this[___state].port = properties.port;
+        this[___state].protocol = properties.protocol;
+        this[___state].search = properties.search;
+        this[___state].searchParams = new URLSearchParams(properties.search);
+        this[___state].username = properties.username;
     }
 }
 
 globalThis.URL = URL;
-
-function update(self, properties) {
-    self[___state].hash = properties.hash;
-    self[___state].host = properties.host;
-    self[___state].hostname = properties.hostname;
-    self[___state].href = properties.href;
-    self[___state].origin = properties.origin;
-    self[___state].password = properties.password;
-    self[___state].pathname = properties.pathname;
-    self[___state].port = properties.port;
-    self[___state].protocol = properties.protocol;
-    self[___state].search = properties.search;
-    self[___state].searchParams = new URLSearchParams(properties.search);
-    self[___state].username = properties.username;
-}

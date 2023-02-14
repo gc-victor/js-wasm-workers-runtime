@@ -19,7 +19,7 @@ mod tests {
             var host_init = url.host;
             var port_init = url.port;
             var search_init = url.search;
-            var searchParams_init = url.searchParams;
+            var searchParams_init = url.searchParams.toString();
             
             url.hash = 'is_a_hash';
             url.hostname = 'test.com';

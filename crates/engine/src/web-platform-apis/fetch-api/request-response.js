@@ -37,14 +37,14 @@ export class ___RequestResponse {
 
         let body = self.body;
 
-        if (body instanceof Blob) {
-            return body.arrayBuffer();
-        }
-
         if (body instanceof ReadableStream) {
             const read = await body.getReader().read();
 
             body = read.value;
+        }
+
+        if (body instanceof Blob) {
+            return body.arrayBuffer();
         }
 
         if (body instanceof FormData) {
