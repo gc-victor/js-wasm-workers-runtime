@@ -5,18 +5,10 @@ const html = `<!DOCTYPE html>
 </body>`;
 
 export const handleRequest = async function (_) {
-    const response = new Response(html.replace("__TITLE__", "Hello World!"), {
+    return new Response(html.replace("__TITLE__", "Hello World!"), {
         status: 200,
         headers: {
             "content-type": "text/html;charset=UTF-8",
         },
     });
-
-    try {
-        ___logger("response-text", await response.text());
-    } catch (error) {
-        ___logger("response-text error", error);
-    }
-
-    return response;
 };

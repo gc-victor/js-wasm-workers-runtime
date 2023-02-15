@@ -64,11 +64,13 @@ fn main() -> Result<()> {
     let on_resolve = ON_RESOLVE.get().unwrap();
     let on_reject = ON_REJECT.get().unwrap();
 
-    let handler = global.get_property("handleRequest")?;
+    let handler_request = global.get_property("handleRequest")?;
 
-    if !handler.is_function() {
-        panic!(r#"expected function named "handleRequest""#);
+    if !handler_request.is_function() {
+        panic!(r#"Expected "handleRequest" function"#);
     }
+
+    let handler = global.get_property("___handleResponse")?;
 
     let args = env::args().collect::<Vec<String>>();
 

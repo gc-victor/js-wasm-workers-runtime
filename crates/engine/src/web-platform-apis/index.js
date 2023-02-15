@@ -1,5 +1,7 @@
 import "./core/web-streams.js";
 
+import "./core/handle-response.js";
+
 import "./core/blob.js";
 import "./core/form-data.js";
 import "./core/text-encoder.js";

@@ -5,5 +5,10 @@ export const handleRequest = async function (request) {
     ___logger("headers:", JSON.stringify(request.headers));
     ___logger("body:", JSON.stringify(json));
 
-    return "";
+    return new Response(JSON.stringify(json), {
+        status: 200,
+        headers: {
+            "content-type": "application/json;charset=UTF-8",
+        },
+    });
 };

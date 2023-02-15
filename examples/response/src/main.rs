@@ -10,12 +10,15 @@ use serde_json;
 #[derive(Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 struct Response {
-    pub status: usize,
-    pub ok: bool,
-    pub status_text: String,
-    pub body: Option<ByteBuf>,
     pub body_used: bool,
+    pub body: Option<ByteBuf>,
     pub headers: Option<HashMap<String, String>>,
+    pub ok: bool,
+    pub redirected: bool,
+    pub status_text: String,
+    pub status: usize,
+    pub r#type: String,
+    pub url: String,
 }
 
 #[tokio::main]
@@ -36,10 +39,14 @@ async fn main() -> Result<()> {
     .replace("__BODY__", &format!("{:?}", body.as_bytes()));
 
     let buffer = runtime(&handler, &request).await?;
-    let response: Response = serde_json::from_str(&String::from_utf8(buffer)?)?;
+    let value = String::from_utf8(buffer)?;
+    let response: Response = serde_json::from_str(&value)?;
+
+    println!("response: {:?}", response);
+
     let body = response.body.unwrap();
 
-    println!("response: {:?}", String::from_utf8(body.into_vec())?);
+    println!("body: {:?}", String::from_utf8(body.into_vec())?);
 
     Ok(())
 }
