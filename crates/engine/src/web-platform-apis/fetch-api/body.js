@@ -1,6 +1,6 @@
 export const symbol = Symbol();
 
-export class ___RequestResponse {
+export class ___Body {
     constructor(childSymbol) {
         this[symbol] = childSymbol;
     }
@@ -8,14 +8,16 @@ export class ___RequestResponse {
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/body
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/body
     get body() {
-        if (this[this[symbol]].body === null) return null;
-        if (this[this[symbol]].body instanceof ReadableStream)
-            return this[this[symbol]].body;
+        const self = this[this[symbol]];
+
+        if (self.body === null) return null;
+        if (self.body instanceof ReadableStream)
+            return self.body;
 
         const stream = new TransformStream();
         const writer = stream.writable.getWriter();
 
-        writer.write(this[this[symbol]].body);
+        writer.write(self.body);
         writer.close();
 
         return stream.readable;
@@ -23,6 +25,13 @@ export class ___RequestResponse {
 
     // read-only
     set body(_) {}
+
+
+    get bodyUsed() {
+        return this[this[symbol]].bodyUsed;
+    }
+    // read-only
+    set bodyUsed(_) {}
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/arrayBuffer
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Response/arrayBuffer
@@ -257,69 +266,3 @@ function multiPartToString(formData, headers) {
 
     return body.join("\n");
 }
-
-// @see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
-export const statusTextList = {
-    100: "Continue",
-    101: "Switching Protocols",
-    102: "Processing",
-    103: "Early Hints",
-    200: "OK",
-    201: "Created",
-    202: "Accepted",
-    203: "Non-Authoritative Information",
-    205: "Reset Content",
-    206: "Partial Content",
-    207: "Multi-Status",
-    208: "Already reported",
-    226: "IM Used",
-    300: "Multiple Choices",
-    301: "Moved Permanently",
-    302: "Found",
-    303: "See Other",
-    304: "Not Modified",
-    305: "Use Proxy",
-    306: "unused",
-    307: "Temporary Redirect",
-    308: "Permanent Redirect",
-    400: "Bad Request",
-    401: "Unauthorized",
-    402: "Payment Required",
-    403: "Forbidden",
-    404: "Not Found",
-    405: "Method Not Allowed",
-    406: "Not Acceptable",
-    407: "Proxy Authentication Required",
-    408: "Request Timeout",
-    409: "Conflict",
-    410: "Gone",
-    411: "Length Required",
-    412: "Precondition Failed",
-    413: "Payload Too Large",
-    414: "URI Too Long",
-    415: "Unsupported Media Type",
-    416: "Range Not Satisfiable",
-    417: "Expectation Failed",
-    418: "I'm a teapot",
-    421: "Misdirected Request",
-    422: "Unprocessable Entity",
-    423: "Locked",
-    424: "Failed Dependency",
-    425: "Too Early",
-    426: "Upgrade Required",
-    428: "Precondition Required",
-    429: "Too Many Requests",
-    431: "Request Header Fields Too Large",
-    451: "Unavailable For Legal Reasons",
-    500: "Internal Server Error",
-    501: "Not Implemented",
-    502: "Bad Gateway",
-    503: "Service Unavailable",
-    504: "Gateway Timeout",
-    505: "Http Version Not Supported",
-    506: "Variant Also Negotiates",
-    507: "Insufficient Storage",
-    508: "Loop Detected",
-    510: "Not Extended",
-    511: "Network Authentication Required",
-};

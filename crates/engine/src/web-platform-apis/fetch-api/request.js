@@ -1,4 +1,4 @@
-import { ___RequestResponse } from "./request-response.js";
+import { ___Body } from "./body.js";
 
 const ___request = Symbol();
 
@@ -11,7 +11,7 @@ const ___request = Symbol();
  * @see: https://fetch.spec.whatwg.org/#request-class
  * @see: https://github.com/github/fetch/blob/fb5b0cf42b470faf8c5448ab461d561f34380a30/fetch.js#L339
  */
-class Request extends ___RequestResponse {
+class Request extends ___Body {
     constructor(input, init) {
         super(___request);
 
@@ -31,7 +31,9 @@ class Request extends ___RequestResponse {
         }
 
         self.body =
-            typeof body === "string" ? new TextEncoder().encode(body) : body || null;
+            typeof body === "string"
+                ? new TextEncoder().encode(body)
+                : body || null;
 
         self.cache = options?.cache || "default";
         self.credentials = options?.credentials || "same-origin";
@@ -100,11 +102,7 @@ class Request extends ___RequestResponse {
     // The getter body is on the parent class
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/bodyUsed
-    get bodyUsed() {
-        return this[___request].bodyUsed;
-    }
-    // readonly
-    set bodyUsed(_) {}
+    // The getter bodyUsed is on the parent class
 
     // @see: https://developer.mozilla.org/en-US/docs/Web/API/Request/cache
     get cache() {
