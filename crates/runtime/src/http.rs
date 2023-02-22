@@ -1,19 +1,21 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_bytes::ByteBuf;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Request {
+    pub body: Option<ByteBuf>,
+    pub headers: Option<HashMap<String, String>>,
     pub method: String,
     pub url: String,
-    pub body: Option<ByteBuf>,
-    pub headers: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Response {
-    pub status: usize,
     pub body: Option<ByteBuf>,
     pub headers: Option<String>,
+    pub status: usize,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -22,8 +24,8 @@ pub struct BoxedRequestError(Box<RequestError>);
 #[derive(Serialize, Deserialize, Debug)]
 pub struct RequestError {
     pub kind: RequestErrorKind,
-    pub url: Option<String>,
     pub message: String,
+    pub url: Option<String>,
 }
 
 impl std::fmt::Display for BoxedRequestError {

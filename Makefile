@@ -26,7 +26,7 @@ release: esbuild
 	make -C crates/engine release
 
 # Run the examples
-example:
+example: release
 	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml
 
 # Install wasi-sdk

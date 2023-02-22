@@ -25,12 +25,18 @@ fn fetcher(context: &Context, _this: &Value, args: &[Value]) -> Result<Value> {
             let url = request.get_property("url")?;
             let url = url.as_str()?.to_string();
             let body = request.get_property("body")?;
-            let body = body.as_str()?.to_string();
+            let body = body.as_str()?;
+            // TODO: this is a hack, we should be able to pass a byte array
+            let body: Vec<u8> = body
+                .split(",")
+                .map(|c| c.trim().parse::<u8>().unwrap())
+                .collect();
+            let headers = request.get_property("headers")?.as_str()?.to_string();
 
             let response = send_request(Request {
                 method,
                 url,
-                headers: None,
+                headers: Some(serde_json::from_str(&headers)?),
                 body: Some(ByteBuf::from(body).to_owned()),
             })?;
 

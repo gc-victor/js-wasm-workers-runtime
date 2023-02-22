@@ -23,6 +23,22 @@ name = "fetch"
 path = "fetch/src/main.rs"
 
 [[example]]
+name = "fetch-post"
+path = "fetch-post/src/main.rs"
+
+[[example]]
+name = "fetch-post-array-buffer"
+path = "fetch-post-array-buffer/src/main.rs"
+
+[[example]]
+name = "fetch-post-blob"
+path = "fetch-post-blob/src/main.rs"
+
+[[example]]
+name = "fetch-post-string"
+path = "fetch-post-string/src/main.rs"
+
+[[example]]
 name = "logger"
 path = "logger/src/main.rs"
 

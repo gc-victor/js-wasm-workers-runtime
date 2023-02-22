@@ -1,11 +1,16 @@
 use std::{
+    collections::HashMap,
     future::Future,
     slice,
     str::{self, FromStr},
 };
 
 use anyhow::Result;
-use reqwest;
+use reqwest::{
+    self,
+    header::{HeaderMap, HeaderName, HeaderValue},
+    Body,
+};
 use serde_bytes::ByteBuf;
 use serde_json;
 use wasmtime::*;
@@ -22,12 +27,18 @@ pub(crate) fn import_send_request(
         let request = read_string(&mut caller, &memory, ptr).await;
         let request = serde_json::from_str::<Request>(request).unwrap();
         let client = reqwest::Client::new();
+        let method = reqwest::Method::from_str(&request.method).unwrap();
+        let url = reqwest::Url::from_str(&request.url).unwrap();
+        let body = Body::from(request.body.unwrap().into_vec());
+        let headers = request_headers(request.headers.unwrap()).unwrap();
 
+        // TODO: trace errors
+        // @see: https://github.com/fermyon/spin/blob/13f7916523f1fd4ab4b6c46d098c28e50baf2843/crates/outbound-http/src/lib.rs#L56
         let response = client
-            .execute(reqwest::Request::new(
-                reqwest::Method::from_str(&request.method).unwrap(),
-                reqwest::Url::from_str(&request.url).unwrap(),
-            ))
+            .request(method, url)
+            .headers(headers)
+            .body(body)
+            .send()
             .await;
 
         let response = parse_response(response).await.unwrap();
@@ -35,6 +46,14 @@ pub(crate) fn import_send_request(
 
         write_string(&mut caller, &memory, json.as_str()).await
     })
+}
+
+fn request_headers(headers: HashMap<String, String>) -> anyhow::Result<HeaderMap> {
+    let mut header_map = HeaderMap::new();
+    for (key, value) in headers {
+        header_map.insert(HeaderName::from_str(&key)?, HeaderValue::from_str(&value)?);
+    }
+    Ok(header_map)
 }
 
 async fn read_string<'c, 'm>(
