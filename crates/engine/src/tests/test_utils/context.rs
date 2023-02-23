@@ -47,7 +47,7 @@ impl Context<'_> {
         contents.push_str(WEB_PLATFORM_APIS);
         contents.push_str(code);
 
-        set_global_utils(&self.context).unwrap();
+        set_global_utils(self.context).unwrap();
 
         self.context.eval_global(SCRIPT_NAME, &contents)?;
 
@@ -78,7 +78,7 @@ impl Context<'_> {
     }
 }
 
-pub fn init_context() -> () {
+pub fn init_context() {
     INIT.call_once(|| {
         let context = QuickjsContext::default();
         let on_resolve_wrap = context.wrap_callback(on_resolve).unwrap();

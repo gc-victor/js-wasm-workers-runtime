@@ -38,7 +38,7 @@ pub async fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
         .build();
 
     let mut config = Config::new();
-    let engine = Engine::new(&config.async_support(true))?;
+    let engine = Engine::new(config.async_support(true))?;
     let module = Module::from_binary(&engine, WASM)?;
     let mut linker = Linker::new(&engine);
 
@@ -57,7 +57,7 @@ pub async fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
 
     stdout_mutex
         .read()
-        .map_err(|e| anyhow::Error::msg(format!("{:?}", e)))?
+        .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?
         .iter()
         .for_each(|i| buffer.push(*i));
 

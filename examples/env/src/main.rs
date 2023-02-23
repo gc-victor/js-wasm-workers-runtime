@@ -78,7 +78,7 @@ fn main() -> Result<()> {
 
     stdout_mutex
         .read()
-        .map_err(|e| anyhow::Error::msg(format!("{:?}", e)))?
+        .map_err(|e| anyhow::Error::msg(format!("{e:?}")))?
         .iter()
         .for_each(|i| buffer.push(*i));
 

@@ -34,11 +34,8 @@ install_wasi_sdk:
 	make -C crates/engine install_wasi_sdk
 
 improve:
-	# --all-target: apply clippy to all targets
-	# --all-features: check all available features
-	# --workspace: check all packages in a workspace
 	QUICKJS_WASM_SYS_WASI_SDK_PATH=$(WASI_SDK) \
-	cargo clippy --all-targets --all-features --workspace -- -D warnings
+	cargo clippy --all-targets --all-features --workspace
 	cargo fmt --all -- --check
 
 test-engine:

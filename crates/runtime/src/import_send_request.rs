@@ -12,7 +12,6 @@ use reqwest::{
     Body,
 };
 use serde_bytes::ByteBuf;
-use serde_json;
 use wasmtime::*;
 use wasmtime_wasi::WasiCtx;
 

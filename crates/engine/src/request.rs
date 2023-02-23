@@ -34,7 +34,7 @@ pub fn request(args: Vec<String>, context: &Context) -> Result<Value> {
 
     let mut headers: Vec<String> = vec![];
     for (key, value) in request.headers {
-        headers.push(format!(r#""{}": "{}""#, key, value));
+        headers.push(format!(r#""{key}": "{value}""#));
     }
 
     let content = format!(

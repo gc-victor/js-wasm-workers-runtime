@@ -15,7 +15,7 @@ async fn main() -> Result<()> {
     }"#
     .to_string();
 
-    let buffer = runtime(&handler, &request).await?;
+    let buffer = runtime(handler, &request).await?;
 
     println!("returned: {:?}", String::from_utf8(buffer)?);
 

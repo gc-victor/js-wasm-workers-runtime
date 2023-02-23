@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
     .to_string()
     .replace("__BODY__", &format!("{:?}", body.as_bytes()));
 
-    let buffer = runtime(&handler, &request).await?;
+    let buffer = runtime(handler, &request).await?;
 
     println!("response: {:?}", &String::from_utf8(buffer)?);
 

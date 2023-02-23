@@ -45,11 +45,11 @@ async fn main() -> Result<()> {
     }"#
     .to_string();
 
-    let buffer = runtime(&handler, &request).await?;
+    let buffer = runtime(handler, &request).await?;
     let value = String::from_utf8(buffer)?;
     let response: Response = serde_json::from_str(&value)?;
 
-    println!("response: {:?}", response);
+    println!("response: {response:?}");
 
     let body = response.body.unwrap();
 

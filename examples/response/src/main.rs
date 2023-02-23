@@ -4,7 +4,6 @@ use anyhow::Result;
 use js_wasm_workers_runtime::runtime;
 use serde::Deserialize;
 use serde_bytes::ByteBuf;
-use serde_json;
 
 #[allow(dead_code)]
 #[derive(Deserialize, Debug)]
@@ -38,11 +37,11 @@ async fn main() -> Result<()> {
     .to_string()
     .replace("__BODY__", &format!("{:?}", body.as_bytes()));
 
-    let buffer = runtime(&handler, &request).await?;
+    let buffer = runtime(handler, &request).await?;
     let value = String::from_utf8(buffer)?;
     let response: Response = serde_json::from_str(&value)?;
 
-    println!("response: {:?}", response);
+    println!("response: {response:?}");
 
     let body = response.body.unwrap();
 
