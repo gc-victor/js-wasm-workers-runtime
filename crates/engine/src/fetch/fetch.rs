@@ -26,18 +26,25 @@ fn fetcher(context: &Context, _this: &Value, args: &[Value]) -> Result<Value> {
             let url = url.as_str()?.to_string();
             let body = request.get_property("body")?;
             let body = body.as_str()?;
-            // TODO: this is a hack, we should be able to pass a byte array
-            let body: Vec<u8> = body
-                .split(',')
-                .map(|c| c.trim().parse::<u8>().unwrap())
-                .collect();
+            let body = if body.is_empty() {
+                None
+            } else {
+                // TODO: this is a hack, we should be able to pass a byte array
+                let bytes: Vec<u8> = body
+                    .split(',')
+                    .map(|c| c.trim().parse::<u8>().unwrap())
+                    .collect();
+
+                Some(ByteBuf::from(bytes))
+            };
             let headers = request.get_property("headers")?.as_str()?.to_string();
 
             let response = send_request(Request {
                 method,
                 url,
                 headers: Some(serde_json::from_str(&headers)?),
-                body: Some(ByteBuf::from(body)),
+                body,
+                // body: Some(ByteBuf::from(body)),
             })?;
 
             context.value_from_str(&response)

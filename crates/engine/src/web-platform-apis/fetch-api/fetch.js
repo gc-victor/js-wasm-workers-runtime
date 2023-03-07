@@ -8,7 +8,7 @@ async function fetch(resource, options) {
     }
 
     const strResponse = ___fetcher({
-        body: options?.body ? await getBody(options.body) : null,
+        body: options?.body ? await getBody(options.body) : "",
         credentials: options?.credentials || "same-origin",
         cache: options?.cache,
         headers: JSON.stringify(options?.headers || {}),

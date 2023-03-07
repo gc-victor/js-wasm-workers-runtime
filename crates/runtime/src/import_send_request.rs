@@ -28,7 +28,10 @@ pub(crate) fn import_send_request(
         let client = reqwest::Client::new();
         let method = reqwest::Method::from_str(&request.method).unwrap();
         let url = reqwest::Url::from_str(&request.url).unwrap();
-        let body = Body::from(request.body.unwrap().into_vec());
+        let body = match request.body {
+            Some(body) => Body::from(body.into_vec()),
+            None => Body::from(""),
+        };
         let headers = request_headers(request.headers.unwrap()).unwrap();
 
         // TODO: trace errors

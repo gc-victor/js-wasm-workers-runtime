@@ -23,18 +23,6 @@ struct Response {
 #[tokio::main]
 async fn main() -> Result<()> {
     let handler: &str = include_str!("./handler.js");
-    // let body = serde_json::json!({"hello": "world"}).to_string();
-    // let request = r#"{
-    //     "body": __BODY__,
-    //     "headers": {
-    //         "content-type": "application/json",
-    //         "x-test": "test"
-    //     },
-    //     "method": "POST",
-    //     "url": "https://test.test"
-    // }"#
-    // .to_string()
-    // .replace("__BODY__", &format!("{:?}", body.as_bytes()));
     let request = r#"{
         "body": null,
         "headers": {
@@ -47,6 +35,7 @@ async fn main() -> Result<()> {
 
     let buffer = runtime(handler, &request).await?;
     let value = String::from_utf8(buffer)?;
+
     let response: Response = serde_json::from_str(&value)?;
 
     println!("response: {response:?}");
