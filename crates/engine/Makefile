@@ -15,10 +15,6 @@ pnpm:
 esbuild:
 	./node_modules/.bin/esbuild --bundle --format=iife --minify --tree-shaking=false --outfile=dist/web-platform-apis.js src/web-platform-apis/index.js
 
-clean:
-	cargo clean
-	rm Cargo.lock
-
 run:
 	cargo run --target wasm32-wasi
 
@@ -28,12 +24,7 @@ debug: esbuild
 release: esbuild
 	cargo build --target wasm32-wasi --release
 
-# Run the examples
-example:
-	cargo run --example $(ARGUMENTS) --manifest-path examples/Cargo.toml --release
-
-# Install wasi-sdk
-install_wasi_sdk:
+install-wasi-sdk:
 	@echo "Installing WASI SDK..."
 	[ -d ./wasi-sdk ] && \
 	echo "wasi_sdk is already installed." && \
