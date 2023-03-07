@@ -10,17 +10,17 @@ serde = { version = "1.0", features = ["derive"] }
 serde_bytes = "0.11"
 serde_json = "1.0.85"
 tokio = { version = "1.14.0", features = ["full"] }
-wasi-common = "5.0.0"
-wasmtime = "5.0.0"
-wasmtime-wasi = "5.0.0"
+wasi-common = "6.0.0"
+wasmtime = "6.0.0"
+wasmtime-wasi = "6.0.0"
 
 [[example]]
 name = "env"
 path = "env/src/main.rs"
 
 [[example]]
-name = "fetch"
-path = "fetch/src/main.rs"
+name = "fetch-get"
+path = "fetch-get/src/main.rs"
 
 [[example]]
 name = "fetch-post"
