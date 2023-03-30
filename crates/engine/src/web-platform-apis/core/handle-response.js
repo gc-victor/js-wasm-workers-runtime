@@ -1,5 +1,5 @@
-globalThis.___handleResponse = async function () {
-    const response = await handleRequest();
+globalThis.___handleResponse = async function (request) {
+    const response = await handleRequest(request);
     const body = await response.arrayBuffer();
 
     return {
