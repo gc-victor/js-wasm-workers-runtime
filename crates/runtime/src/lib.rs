@@ -3,17 +3,20 @@ use std::{
     sync::{Arc, RwLock},
 };
 
+use wasmtime_environment::WasmtimeEnvironment;
+
+use lazy_static::lazy_static;
 use wasi_common::pipe::{ReadPipe, WritePipe};
 use wasmtime::*;
 use wasmtime_wasi::tokio::WasiCtxBuilder;
 
 mod http;
 mod import_send_request;
+mod wasmtime_environment;
 
-use import_send_request::import_send_request;
-
-static WASM: &[u8] =
-    include_bytes!("../../../target/wasm32-wasi/release/js-wasm-workers-engine.wasm");
+lazy_static! {
+    static ref WASMTIME_ENVIRONMENT: WasmtimeEnvironment = WasmtimeEnvironment::default();
+}
 
 pub async fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
     let handler = handler
@@ -37,14 +40,10 @@ pub async fn runtime(handler: &str, request: &str) -> anyhow::Result<Vec<u8>> {
         .args(&[request.to_string()])?
         .build();
 
-    let mut config = Config::new();
-    let engine = Engine::new(config.async_support(true))?;
-    let module = Module::from_binary(&engine, WASM)?;
-    let mut linker = Linker::new(&engine);
-
-    wasmtime_wasi::tokio::add_to_linker(&mut linker, |cx| cx)?;
-
-    linker.func_wrap1_async("env", "import_send_request", import_send_request)?;
+    let environment = WASMTIME_ENVIRONMENT.clone();
+    let engine = environment.engine;
+    let module = environment.module;
+    let linker = environment.linker;
 
     let mut store = Store::new(&engine, wasi);
     let instance = linker.instantiate_async(&mut store, &module).await?;
